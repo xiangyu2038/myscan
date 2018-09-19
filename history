@@ -1,0 +1,4 @@
+///////////历史安装包
+composer require barryvdh/laravel-ide-helper      ide 工具
+composer require barryvdh/laravel-debugbar --dev      调试工具
+
