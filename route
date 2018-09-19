@@ -1,0 +1,15 @@
+///////////////路由示例文件
+https://laravel-china.org/docs/laravel/5.5/routing/1293#basic-routing     ////详细教程
+
+   Route::get('/user', 'UsersController@index');  ///基本带控制器路由
+
+   Route::match(['get', 'post'], '/', function () {
+       //
+   });                            ////匹配路由
+
+   Route::any('foo', function () {
+       //
+   });                            ////任何路由
+
+
+   Route::redirect('/here', '/there', 301);       ///////重定向路由
