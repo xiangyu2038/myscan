@@ -11,15 +11,19 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::get('/', function () {
+//    return view('welcome');
+//});
 Route::get('test', function () {
    dd(__LINE__);
 });
 
-Route::namespace('Myscan')->prefix('myscan')->group(function () {
-    Route::get('/{user}', 'indexController@index')->name('mysan.index.index');
+/////////web  desktop  桌面
+Route::get('/', 'Admin\indexController@index');
+
+
+Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
+    Route::get('/', 'indexController@index')->name('admin.myscan.index.index');
     Route::get('api/{user}', function (App\User $user) {
         dd(__LINE__);
     });
