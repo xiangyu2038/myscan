@@ -9,7 +9,7 @@ class IndexController extends Controller
 {
     //
     public function index(){
-
+          sleep(3);
         return view('admin.myscan.index');
     }
 }

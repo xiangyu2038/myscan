@@ -12,23 +12,23 @@
 <div class="bgloader"></div>
 <div id="task-bar"><ul class="task-window"></ul></div>
 <div id="desk"><ul></ul></div>
-<div id="menubar">
-    <span class="mtop"></span>
-    <ul>
-        <li class="i selected" title="作者信息"><a href="index.html?menu=1"></a></li>
-        <li class="b" title="博客版本"><a href="index.html?menu=2"></a></li>
-        <li class="z" title="部分作品"><a href="index.html?menu=3"></a></li>
-        <li class="m" title="RSS"><a href="http://www.zi-han.net/?feed=rss2"></a></li>
+{{--<div id="menubar">--}}
+    {{--<span class="mtop"></span>--}}
+    {{--<ul>--}}
+        {{--<li class="i selected" title="作者信息"><a href="https://www.baidu.com/"></a></li>--}}
+        {{--<li class="b" title="博客版本"><a href="index.html?menu=2"></a></li>--}}
+        {{--<li class="z" title="部分作品"><a href="index.html?menu=3"></a></li>--}}
+        {{--<li class="m" title="RSS"><a href="http://www.zi-han.net/?feed=rss2"></a></li>--}}
 
-    </ul>
-    <span class="mbot"><a href="javascript:void(0);">收起</a></span>
-</div>
+    {{--</ul>--}}
+    {{--<span class="mbot"><a href="javascript:void(0);">收起</a></span>--}}
+{{--</div>--}}
 <div id="start-menu">
     <ul class="start-menu">
         <li class="menuSelected sm1"><a href="#">显示桌面</a></li>
-        <li class="sm2"><a href="#">显示侧边栏</a></li>
-        <li class="sm4"><a href="#">加入收藏</a></li>
-        <li class="sm5"><a target="_blank" href="http://www.zi-han.net">返回博客主页</a></li>
+        {{--<li class="sm2"><a href="#">显示侧边栏</a></li>--}}
+        {{--<li class="sm4"><a href="#">加入收藏</a></li>--}}
+        {{--<li class="sm5"><a target="_blank" href="http://www.zi-han.net">返回博客主页</a></li>--}}
     </ul>
 </div>
 <span class="startMenuBtn"></span>
@@ -76,6 +76,10 @@
         [{{$data['key']}},"{{$data['name']}}","{{ $data['icon'] }}","{{ $data['url'] }}",{{ $data['width'] }},{{ $data['height'] }}],
             @endforeach
     ];
+
+
+
+
 </script>
 
 </body>

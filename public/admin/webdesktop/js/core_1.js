@@ -177,7 +177,7 @@ Core.create = function(obj,opt){
             resize	:true
         };
     }
-	
+
     var window_warp = 'window_'+options.num+'_warp';
     var window_inner = 'window_'+options.num+'_inner';
     //判断窗口是否已打开
@@ -194,6 +194,7 @@ Core.create = function(obj,opt){
                 'z-index':Core.config.createIndexid
             }).show();
             //改变窗口遮罩层样式
+
             $('.window-frame').children('div').show();
             $('#'+window_inner+' .window-frame').children('div').hide();
             Core.config.createIndexid += 1;
@@ -252,6 +253,20 @@ Core.create = function(obj,opt){
         win_warp = FormatModel(FormatModel(windowTemp,{
             resize:win_warp
         }),_cache.windowTemp);
+console.log(win_warp);
+        // win_warp='<body>\n' +
+        //     '<div id="loading"></div>\n' +
+        //     '</body>\n' +
+        //     '<style type="text/css">\n' +
+        //     '    #loading{z-index:1;padding:5px 0 5px 29px;\n' +
+        //     '        background:url(http://myscan.dev.com/admin/webdesktop/images/loading.gif) no-repeat 10px top;left:0;top:0;width:90px;\n' +
+        //     '        position:fixed; height:21px}\n' +
+        //     '</style>'+win_warp;
+
+        // win_warp=win_warp+'<script>'+' var iframe = document.getElementById("frame0");\n' +
+        //     '    iframe.onmessage = function(){\n' +
+        //     '        alert("iframe load  done");\n' +
+        //     '    };'+'</script>';
         $('#desk').append(win_warp);
         $("#"+window_warp).data("info",_cache.windowTemp);
         Core.config.createIndexid += 1;

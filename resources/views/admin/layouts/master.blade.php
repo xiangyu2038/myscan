@@ -27,7 +27,8 @@
     <link rel="stylesheet" href="{{asset('admin/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css')}}">
     <!-- bootstrap wysihtml5 - text editor -->
     <link rel="stylesheet" href="{{asset('admin/adminlte/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css')}}">
-
+    <link rel="stylesheet" href="{{asset('css/loading.css')}}">
+    <link rel="stylesheet" href="http://adminlte.la998.com/plugins/fullcalendar/fullcalendar.min.css">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -40,7 +41,7 @@
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <!-- Content Header (Page header) -->
-@yield('content-header')
+
 
 <!-- Main content -->
 @yield('content')
@@ -83,5 +84,9 @@
 {{--<script src="dist/js/pages/dashboard.js"></script>--}}
 <!-- AdminLTE for demo purposes -->
 <script src="{{asset('admin/adminlte/dist/js/demo.js')}}"></script>
+
+@yield('script')
+
+
 </body>
 </html>

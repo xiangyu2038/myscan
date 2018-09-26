@@ -62,9 +62,9 @@ body{font:12px/1.8 Microsoft YaHei,simsong;height:100%;overflow:hidden;backgroun
 .ha-revert:hover{background-position:-94px -30px}
 .ha-close{background-position:-64px -59px}
 .ha-close:hover{background-position:-64px -30px}
-.window-frame{position:absolute;top:30px;right:2px;bottom:32px;*bottom:29px;left:2px;background:#FFF}
+.window-frame{background:url(../images/loading.gif) no-repeat #fff center;position:absolute;top:30px;right:2px;bottom:32px;*bottom:29px;left:2px;}
 *html .window-frame{height:expression((function(el){el.style.height=el.parentNode.clientHeight-59+"px";})(this));}
-.window-frame iframe{position:absolute;border:0;height:100%;width:100%;top:0;bottom:0;left:0;right:0}
+.window-frame iframe{position:absolute;border:0;height:100%;width:100%;top:0;bottom:0;left:0;right:0;}
 .set-bar{_width:100%;position:absolute;background:#E8E8E8;border-top:1px solid #b9b9b9;bottom:0;height:30px;left:2px;right:2px;bottom:2px}
 .set-bar .btn{margin-top:3px;margin-right:5px;border:1px solid #E8E8E8;border-radius:3px;color:#7D7D7D;cursor:pointer;display:inline-block;height:20px;padding:1px;position:relative}
 .set-bar .btn:hover{border:1px solid #7D7D7D;background:#fff;color:#333;text-decoration:none}
