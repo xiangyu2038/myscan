@@ -72,11 +72,11 @@
 <script type="text/javascript" id="bdshell_js"></script>
 <script>
     var shortcut = [
-            @foreach ($datas as $data)
-        [{{$data['key']}},"{{$data['name']}}","{{ $data['icon'] }}","{{ $data['url'] }}",{{ $data['width'] }},{{ $data['height'] }}],
+
+            @foreach ($menus as $menu)
+        [{{$menu['id']}},"{{$menu['name']}}","{{ $menu['icon'] }}","{{ $menu['url'] }}",{{ $menu['width'] }},{{ $menu['height'] }}],
             @endforeach
     ];
-
 
 
 

@@ -41,11 +41,19 @@
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <!-- Content Header (Page header) -->
+<!-- 桌面版的标签 -->
+@yield('tag')
+<!-- 桌面版的标签 -->
 
 
 <!-- Main content -->
 @yield('content')
 <!-- /.content -->
+
+<!-- 弹出层 -->
+@yield('pop')
+<!-- 弹出层 -->
+
 
 <!-- jQuery 3 -->
 <script src="{{asset('admin/adminlte/bower_components/jquery/dist/jquery.min.js')}}"></script>
@@ -84,6 +92,11 @@
 {{--<script src="dist/js/pages/dashboard.js"></script>--}}
 <!-- AdminLTE for demo purposes -->
 <script src="{{asset('admin/adminlte/dist/js/demo.js')}}"></script>
+
+<!-- 自己的js -->
+<script src="{{asset('admin/my/master.js')}}"></script>
+
+
 
 @yield('script')
 

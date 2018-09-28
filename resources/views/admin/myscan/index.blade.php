@@ -1,11 +1,7 @@
-@extends('admin.layouts.master')
+@extends('admin.layouts.desk-master')
 @section('title', '标题文件啊')
 
 @section('content')
-
-
-
-
     <div class="row">
 
         <div class="col-md-12">
@@ -454,7 +450,6 @@
 
         <!-- /.col -->
     </div>
-
     <div id="myModal" class="modal fade" data-keyboard="false"
          data-backdrop="static" data-role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
@@ -481,7 +476,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 @section('script')
     <script>

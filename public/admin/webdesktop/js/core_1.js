@@ -253,7 +253,7 @@ Core.create = function(obj,opt){
         win_warp = FormatModel(FormatModel(windowTemp,{
             resize:win_warp
         }),_cache.windowTemp);
-console.log(win_warp);
+
         // win_warp='<body>\n' +
         //     '<div id="loading"></div>\n' +
         //     '</body>\n' +

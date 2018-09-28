@@ -20,6 +20,21 @@ class TestModel extends Model
     protected $dateFormat = 'U';
 
 
+///属性转换
+    //    protected $casts = [
+//        'id' => 'boolean',
+//    ];
 
+///访问器
+    /**
+     * 获取用户的名字
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getFirstNameAttribute($value)
+    {
+        return ucfirst($value);
+    }
 
 }
