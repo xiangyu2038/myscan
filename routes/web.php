@@ -43,7 +43,7 @@ Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
 });
 
 Route::namespace('Admin\Tool')->prefix('tool')->group(function () {
-    Route::get('/', 'indexController@index')->name('admin.tool.index.index');
+    Route::any('/', 'indexController@index')->name('admin.tool.index.index');
 });
 
 

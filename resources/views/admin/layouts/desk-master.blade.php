@@ -41,19 +41,17 @@
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <!-- Content Header (Page header) -->
-<!-- 桌面版的标签 -->
-@yield('tag')
-<!-- 桌面版的标签 -->
+@component('admin.layouts.tag')
+@endcomponent
 
 
 <!-- Main content -->
+<section class="content">
 @yield('content')
+</section>
 <!-- /.content -->
 
-<!-- 弹出层 -->
-@yield('pop')
-<!-- 弹出层 -->
-
+@include('admin.layouts.pop')
 
 <!-- jQuery 3 -->
 <script src="{{asset('admin/adminlte/bower_components/jquery/dist/jquery.min.js')}}"></script>

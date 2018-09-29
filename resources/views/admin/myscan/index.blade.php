@@ -477,26 +477,3 @@
         </div>
     </div>
 @endsection
-@section('script')
-    <script>
-        $('.s-tab').click(function () {
-            $('#myModal').modal('show');
-            window.location.href=$(this).attr('data-url');
-        });
-
-        function back()
-        {
-
-            window.history.go(-1);
-        }
-        function forward()
-        {
-
-            window.history.go(1);
-        }
-        function refresh()
-        {
-            history.go(-0) //刷新
-        }
-    </script>
-@endsection

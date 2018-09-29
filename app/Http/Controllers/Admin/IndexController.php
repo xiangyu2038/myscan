@@ -12,6 +12,7 @@ class IndexController extends Controller
     public function index(){
 
          $menus = MenuModel::getMenu();
+
         return view('admin.index',compact('menus'));
 
     }

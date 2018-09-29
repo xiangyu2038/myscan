@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Myscan;
+namespace App\Admin\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
