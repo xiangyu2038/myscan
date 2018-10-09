@@ -14,7 +14,7 @@
 //Route::get('/', function () {
 //    return view('welcome');
 //});
-Route::get('test', function () {
+Route::get('tests', function () {
    dd(__LINE__);
 });
 
@@ -32,18 +32,25 @@ Route::get('/', function (){
 
 
 /////////web  desktop  桌面
-Route::get('webdesktop', 'Admin\indexController@index');
+Route::get('webdesktop', 'Admin\IndexController@index');
+
 
 
 Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
-    Route::get('/', 'indexController@index')->name('admin.myscan.index.index');
+    Route::get('/', 'IndexController@index')->name('admin.myscan.index.index');
     Route::get('api/{user}', function (App\User $user) {
         dd(__LINE__);
     });
 });
 
 Route::namespace('Admin\Tool')->prefix('tool')->group(function () {
-    Route::any('/', 'indexController@index')->name('admin.tool.index.index');
+    Route::any('/', 'IndexController@index')->name('admin.tool.index.index');
+    Route::any('/convertData', 'IndexController@convertData')->name('admin.tool.index.convert_data');
 });
+
+
+
+
+
 
 

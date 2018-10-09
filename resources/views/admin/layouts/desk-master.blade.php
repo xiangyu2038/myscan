@@ -35,7 +35,8 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-
+    <!-- jQuery 3 -->
+    <script src="{{asset('admin/adminlte/bower_components/jquery/dist/jquery.min.js')}}"></script>
     <!-- Google Font -->
     {{--<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">--}}
 </head>
@@ -53,8 +54,7 @@
 
 @include('admin.layouts.pop')
 
-<!-- jQuery 3 -->
-<script src="{{asset('admin/adminlte/bower_components/jquery/dist/jquery.min.js')}}"></script>
+
 <!-- jQuery UI 1.11.4 -->
 <script src="{{asset('admin/adminlte/bower_components/jquery-ui/jquery-ui.min.js')}}"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -93,7 +93,7 @@
 
 <!-- 自己的js -->
 <script src="{{asset('admin/my/master.js')}}"></script>
-
+<!-- 自己的js -->
 
 
 @yield('script')
