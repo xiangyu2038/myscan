@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin\Models;
+namespace App\Models\Admin;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,10 +14,9 @@ class TestModel extends Model
     protected $primaryKey = 'id';
 
 //是否开启时间戳
-    public $timestamps = false;
+    public $timestamps = true;
 
-//设置时间戳格式为Unix
-    protected $dateFormat = 'U';
+
 
 
 ///属性转换

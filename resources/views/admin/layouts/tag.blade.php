@@ -3,10 +3,15 @@
         <!-- Custom Tabs -->
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-               @foreach($sub_menus as $sub_menu)
-                <li class="s-tab" data-url="{{route($sub_menu['route_name'])}}" ><a href=""  data-toggle="tab" aria-expanded="true">{{$sub_menu['name']}}</a></li>
+               @if(isset($sub_menus))
+                    @foreach($sub_menus as $sub_menu)
+                    <li  @if($sub_menu['route_name']==$sub_menu['current'])
+                         class="s-tab active"
+                         @else
+                         class="s-tab"
+                         @endif data-url="{{route($sub_menu['route_name'])}}" ><a href=""  data-toggle="tab" aria-expanded="true">{{$sub_menu['name']}}</a></li>
                 @endforeach
-
+@endif
                 {{-- <li class="pull-right"><a href="#" class="text-muted"><i class="fa fa-gear">你好</i></a></li>--}}
                 <li class="pull-right"> <div class="fc-left pull-right">
                         <div class="fc-button-group">

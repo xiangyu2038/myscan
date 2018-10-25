@@ -1,0 +1,109 @@
+html,
+body {
+  height: 100%;
+  background: #fff;
+}
+.login-wrap {
+  height: 40%;
+  background: #354052;
+  position: relative;
+}
+.login-wrap .login-main {
+  position: absolute;
+  left: 50%;
+  bottom: -200px;
+  margin-left: -200px;
+  width: 400px;
+  height: 327px;
+  background: #fff;
+  padding: 25px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+.login-wrap .login-main .login-mascot > div {
+  width: 207px;
+  height: 150px;
+  position: absolute;
+  left: 50%;
+  margin-left: -103px;
+  top: -139px;
+}
+.login-wrap .login-main .login-mascot .open-eye {
+  background: url(/Public/Behind/images/open-eye.png) no-repeat center;
+}
+.login-wrap .login-main .login-mascot .open-eye span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 10px;
+  top: 88px;
+}
+.login-wrap .login-main .login-mascot .open-eye .eye-left {
+  left: 63px;
+}
+.login-wrap .login-main .login-mascot .open-eye .eye-right {
+  left: 125px;
+}
+.login-wrap .login-main .login-mascot .close-eye {
+  background: url(/Public/Behind/images/close-eye.png) no-repeat center;
+  display: none;
+}
+.login-wrap .login-main .logo {
+  width: 150px;
+  height: 30px;
+  margin: 0 auto 25px;
+  background: url(/Public/Behind/images/new-logo.png) no-repeat center;
+}
+.login-wrap .login-main .login-label {
+  display: block;
+  height: 38px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.login-wrap .login-main .login-label i {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  color: #8995a1;
+}
+.login-wrap .login-main .login-label input {
+  display: block;
+  width: 100%;
+  padding-left: 35px;
+}
+.login-wrap .login-main .login-label .code {
+  width: 220px;
+}
+.login-wrap .login-main .login-label .verify {
+  width: 120px;
+  height: 38px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: 1px solid #dde3e9;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.login-wrap .login-main .submit {
+  display: block;
+  width: 100%;
+  margin-top: 30px;
+}
+.login-wrap .login-error {
+  width: 800px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: 400px;
+  margin: -300px 0 0 -400px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  background: url(/Public/Behind/images/zhayan.gif) no-repeat center 20px #fff;
+}
+.login-wrap .login-error p {
+  padding-top: 280px;
+  margin-bottom: 30px;
+}
+.login-wrap .login-error a b {
+  margin-left: 3px;
+  font-weight: normal;
+}

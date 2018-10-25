@@ -1,0 +1,112 @@
+html,body{
+    height: 100%;
+    background: #fff;
+}
+.login-wrap{
+    height: 40%;
+    background: #354052;
+    position: relative;
+    .login-main{
+        position: absolute;
+        left: 50%;
+        bottom: -200px;
+        margin-left: -200px;
+        width: 400px;
+        height: 327px;
+        background: #fff;
+        padding: 25px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        .login-mascot{
+            > div{
+                width: 207px;
+                height: 150px;
+                position: absolute;
+                left: 50%;
+                margin-left: -103px;
+                top: -139px;
+            };
+            .open-eye{
+                background: url(/Public/Behind/images/open-eye.png) no-repeat center;
+                span{
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: #fff;
+                    border-radius: 10px;
+                    top: 88px;
+                }
+                .eye-left{
+                    left: 63px;
+                }
+                .eye-right{
+                    left: 125px;
+                }
+            };
+            .close-eye{
+                background: url(/Public/Behind/images/close-eye.png) no-repeat center;
+                display: none;
+            };
+        }
+        .logo{
+            width: 150px;
+            height: 30px;
+            margin: 0 auto 25px;
+            background: url(/Public/Behind/images/new-logo.png) no-repeat center;
+        }
+        .login-label{
+            display: block;
+            height: 38px;
+            margin-bottom: 20px;
+            position: relative;
+            i{
+                position: absolute;
+                top: 9px;
+                left: 9px;
+                color: #8995a1;
+            }
+            input{
+                display: block;
+                width: 100%;
+                padding-left: 35px;
+            }
+            .code{
+                width: 220px;
+            }
+            .verify{
+                width: 120px;
+                height: 38px;
+                position: absolute;
+                right: 0;
+                top: 0;
+                border: 1px solid #dde3e9;
+                cursor: pointer;
+                border-radius: 4px;
+            }
+        }
+        .submit{
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+        }
+    }
+    .login-error{
+        width: 800px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        height: 400px;
+        margin: -300px 0 0 -400px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        background: url(/Public/Behind/images/zhayan.gif) no-repeat center 20px #fff;
+        p{
+            padding-top: 280px;
+            margin-bottom: 30px;
+        }
+        a{
+            b{
+                margin-left: 3px;
+                font-weight: normal;
+            }
+        }
+    }
+}

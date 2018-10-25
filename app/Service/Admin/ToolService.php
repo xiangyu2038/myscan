@@ -34,13 +34,19 @@ class ToolService extends Facade
         $qi_ta=[];
 
         foreach ($data as $v){
-            if(strpos($v['fashion_name'],'裤')!=false){
-                $ku_zi[]=$v;
-            }else if(strpos($v['fashion_name'],'裙')!=false){
-                $qun_zi[]=$v;
-            }else{
-                $qi_ta[]=$v;
+            if(!$data){
+                continue;
             }
+            if(isset($v['fashion_name'])){
+                if(strpos($v['fashion_name'],'裤')!=false){
+                    $ku_zi[]=$v;
+                }else if(strpos($v['fashion_name'],'裙')!=false){
+                    $qun_zi[]=$v;
+                }else{
+                    $qi_ta[]=$v;
+                }
+            }
+
         }
 
 

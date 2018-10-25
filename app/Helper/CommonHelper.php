@@ -34,7 +34,7 @@ class CommonHelper extends Facade
 
         if(!$file){
             ////不存在上传信息
-            return  error_msg(1,'不存在上传信息');
+            return  msg(1,'不存在上传信息');
         }
         //判断文件是否有效
         if ($request->hasFile($name) && $file->isValid()) {
@@ -47,10 +47,10 @@ class CommonHelper extends Facade
 
             $data=['url'=>config('filesystems.disks.public.root'). $folder . "/" . $newFileName,'ext'=>$file->getClientOriginalExtension()];
 
-            return error_msg(0,'处理成功',$data);
+            return msg(0,'处理成功',$data);
         }
 
-        return  error_msg(1,'上传失败');
+        return  msg(1,'上传失败');
 
     }
 

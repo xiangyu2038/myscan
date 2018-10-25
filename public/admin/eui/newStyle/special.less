@@ -1,0 +1,250 @@
+// 颜色
+@primary:#6cf;
+@primary-light:#7df;
+@primary-dark:#5be;
+
+@done:#6c9;
+@done-light:#7da;
+@done-dark:#5b8;
+
+@warn:#fb1;
+@warn-light:#fc2;
+@warn-dark:#ea0;
+
+@danger:#f66;
+@danger-light:#f88;
+@danger-dark:#e55;
+
+@black:#283038; //背景、字体
+@gray1:#434c56; //背景、字体
+@gray2:#8995a1; //字体
+@gray3:#c4cbd3; //border
+@gray4:#dde3e9; //border
+@gray5:#f1f4f7; //bg
+@gray6:#f5f8fb; //用于hover背景
+@white:#fff; //白色字体 
+
+*{ box-sizing: border-box; padding: 0; margin: 0; font-family: 'Arial','Microsoft YaHei';}
+html, body{ width: 100%; color: @black; background: @white; line-height: 1; font-size: 14px;}
+*:focus{ outline: none;}
+ul{ list-style: none;}
+h1, h2, h3, h4, h5, h6{ font-weight: normal;}
+table{ border-collapse: collapse; border-spacing: 0;}
+a img, img, button, fieldset{ border:none;}
+a, a:active, a:hover, input[type=range]:focus{ outline: none; text-decoration: none; color: @black; cursor: pointer;}
+article, aside, details, figcaption, figure, footer, header, nav, section, summary{ display: block;}
+ins{ text-decoration: none;}
+.eui-shade, .eui-calendar, .eui-select, .eui-imgpopover, .eui-page{ user-select: none;}
+input[class*=".eui-"],input[type="range"],input[type="range"]::-webkit-slider-thumb,input[type=range]::-webkit-slider-runnable-track{ -webkit-appearance: none;}
+input[class*=".eui-"], button[class*=".eui-"]{ vertical-align: middle;}
+button, select, .eui-switch-wrap, .eui-btn, .eui-radio-wrap, .eui-checkbox-wrap{ cursor: pointer; user-select: none;}
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder{ color: @gray2;}
+.eui-upload-file[type="file"]{ color: transparent;}
+input[type="range"]::-webkit-slider-thumb{
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    background-color: @white;
+    border: 1px solid @gray3;
+    margin-top: -5px;
+    box-shadow: none;
+}
+input[type="range"]::-webkit-slider-thumb:hover{
+    background: @primary;
+    border-color: @primary-dark;
+}
+input[type=range]::-webkit-slider-runnable-track{
+    height: 5px;
+    box-shadow: none;
+}
+input[type="range"]{
+    width: 100%;
+    vertical-align: middle;
+    background-color: @gray4;
+    height:5px;
+    box-shadow: none;
+}
+
+html,body{
+    height: 100%;
+    background: @gray4;
+    color: @gray1;
+}
+
+.clearfix{
+    clear: both;
+}
+
+.header{
+    height: 60px;
+    background: #fff;
+    padding: 5px 10px;
+    .logo{
+        width: 150px;
+        height: 50px;
+        background: url(/Public/Behind/images/new-logo.png) no-repeat center;
+        float:left;
+    }
+    .number{
+        float:right;
+        line-height: 50px;
+        font-size: 16px;
+    }
+}
+.special{
+    margin: 5px;
+    padding: 0 10px;
+    background: #fff;
+    .title{
+        font-size: 20px;
+        line-height: 50px;
+        border-bottom: 1px solid @gray4;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .data-list-tit{
+        background: @gray5;
+    }
+    .data-list-tit,.data-list-item{
+        font-size: 0;
+        >span,li{
+            display: inline-block;
+            font-size: 14px;
+            line-height: 40px;
+            vertical-align: top;
+            padding: 0 5px;
+        }
+       .num{ width: 12%; text-align: center;}
+       .class{ width: 34%;}
+       .name{ width: 20%;}
+       .sex{ width: 12%;}
+       .order{ width: 22%;}
+    }
+    .data-list-item{
+        border-bottom: 1px solid @gray3;
+        position: relative;
+    }
+    .data-list-item:before{
+        content: '';
+        position: absolute;
+        right: 5px;
+        top: 15px;
+        width: 10px;
+        height: 10px;
+        border-top: 1px solid @gray3;
+        border-right: 1px solid @gray3;
+        transform: rotate(45deg);
+    }
+    .data-list-content{
+        display: none;
+    }
+    .data-list-item.open:before{
+        transform: rotate(135deg);
+    }
+    .data-list-item.open{
+        .data-list-info{
+            border-top: 1px solid @gray4;
+            padding: 5px;
+            li{
+                line-height: 30px;
+                width: 45%;
+                padding-left: 10px;
+            }
+            .index{
+                width: 10%;
+                text-align: center;
+                line-height: 20px;
+                height: 70px;
+                float: left;
+                border-right: 1px solid @gray4;
+                margin: -5px 0;
+                padding: 15px 5px;
+            }
+            .phone{
+                width:100%;
+                margin-top: 5px;
+                border-top: @gray4;
+            }
+        }
+        .data-list-content{
+            display: block;
+            li{
+                font-size: 14px;
+            }
+            .content-list,.data-list-info{
+                border-bottom: 1px solid @gray4;
+                padding: 5px;
+                li{
+                    line-height: 30px;
+                    width: 45%;
+                    padding-left: 10px;
+                }
+                .index{
+                    width: 10%;
+                    text-align: center;
+                    line-height: 20px;
+                    height: 70px;
+                    float: left;
+                    border-right: 1px solid @gray4;
+                    margin: -5px 0;
+                    padding: 15px 5px;
+                }
+            }
+            .content-list{
+                background: @gray6;
+                .index{
+                    line-height: 70px;
+                    padding: 0 5px;
+                }
+            }
+        }
+    }
+}
+.top,.top:hover,.top:active{
+    position: fixed;
+    right: 5px;
+    bottom: 30px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 50px;
+}
+#think_page_trace_open{
+    display: none;
+}
+.search{
+    font-size: 0;
+    button,select,input{
+        border: 1px solid @gray3;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    select{
+        display: inline-block;
+        width: 32%;
+        height: 40px;
+        line-height: 40px;
+        padding: 0 5px;
+    }
+    select + select{
+        margin-left: 2%;
+    }
+    input{
+        width: 66%;
+        line-height: 40px;
+        padding: 0 10px;
+        margin-right: 2%;
+    }
+    button{
+        width: 32%;
+        line-height: 40px;
+        background: @primary-dark;
+        color: #fff;
+        border: none;
+    }
+}

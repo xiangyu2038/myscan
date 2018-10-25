@@ -24,3 +24,8 @@
         </div>
     </div>
 </div>
+<script>
+    $('#myModal').click(function () {
+        $(this).modal('hide');
+    })
+</script>

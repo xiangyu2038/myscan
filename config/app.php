@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'PRC',
 
     /*
     |--------------------------------------------------------------------------
@@ -230,5 +230,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
     ],
+     'page_size'=>15,  ///分页大小
+     'user_config'=>base_path().'/resources/config/',////用户自定义配置文件目录
 
 ];

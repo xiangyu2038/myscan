@@ -13,5 +13,10 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+        'myscan/printList',
+        '/myscan/scaning',
+        '/myscan/addFaHuo',
+        '/myscan/editAddress',
+        '/myscan/editFashionSize',
     ];
 }

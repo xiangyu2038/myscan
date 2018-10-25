@@ -1,0 +1,12 @@
+html,
+body {
+  background: #fff;
+  overflow: auto;
+}
+body {
+  padding: 15px;
+}
+.eui-shade,
+.eui-layer {
+  position: fixed !important;
+}

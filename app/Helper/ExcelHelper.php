@@ -55,10 +55,10 @@ class ExcelHelper extends Facade
         $objPHPExcel = $this->includeExcelExport();
         foreach ($data as $key=>$v){
             $titles=$sheet_title[$key];
-            $this->sheet($v,$objPHPExcel,$headArr,$titles,$php_eol=['F'],$width=[['F','60']],$key);
+            $this->sheet($v,$objPHPExcel,$headArr,$titles,$php_eol,$width,$key);
         }
         $fileName = iconv("utf-8", "gb2312", $title . date('Ymd') . '.xls');
-
+        $objPHPExcel->setActiveSheetIndex(0);
         ob_end_clean();
         header('Content-Type: application/vnd.ms-excel');
         header("Content-Disposition: attachment;filename=\"$fileName\"");
@@ -121,6 +121,7 @@ class ExcelHelper extends Facade
             $key += 1;
         }
         $column = 2; //从第二行写入数据 第一行是表头
+
         foreach($data as $key => $rows){ //行写入
             //dd($rows);
             $span = 0;

@@ -2,6 +2,7 @@
 @section('title', '测试标题')
 
 @section('content')
+    <button class="btn btn-primary" id="btn-new">							<i class="fa fa-plus"></i> 新建						</button>						<button class="btn btn-danger" id="btn-del">							<i class="fa fa-minus"></i> 删除						</button>
     <div class="row">
 
         <div class="col-md-12">

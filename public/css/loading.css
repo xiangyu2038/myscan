@@ -1,17 +1,17 @@
 
 .spinner {
     margin: 100px auto;
-    width: 20px;
-    height: 20px;
+    width: 5px;
+    height: 10px;
     position: relative;
 }
 
 .container1 > div, .container2 > div, .container3 > div {
-    width: 15px;
-    height: 15px;
+    width: 10px;
+    height: 10px;
     background-color: #EBFF00;
 
-    border-radius: 100%;
+    border-radius: 50%;
     position: absolute;
     -webkit-animation: bouncedelay 1.2s infinite ease-in-out;
     animation: bouncedelay 1.2s infinite ease-in-out;

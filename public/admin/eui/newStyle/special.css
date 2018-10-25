@@ -1,0 +1,327 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Arial', 'Microsoft YaHei';
+}
+html,
+body {
+  width: 100%;
+  color: #283038;
+  background: #fff;
+  line-height: 1;
+  font-size: 14px;
+}
+*:focus {
+  outline: none;
+}
+ul {
+  list-style: none;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: normal;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+a img,
+img,
+button,
+fieldset {
+  border: none;
+}
+a,
+a:active,
+a:hover,
+input[type=range]:focus {
+  outline: none;
+  text-decoration: none;
+  color: #283038;
+  cursor: pointer;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+nav,
+section,
+summary {
+  display: block;
+}
+ins {
+  text-decoration: none;
+}
+.eui-shade,
+.eui-calendar,
+.eui-select,
+.eui-imgpopover,
+.eui-page {
+  user-select: none;
+}
+input[class*=".eui-"],
+input[type="range"],
+input[type="range"]::-webkit-slider-thumb,
+input[type=range]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+}
+input[class*=".eui-"],
+button[class*=".eui-"] {
+  vertical-align: middle;
+}
+button,
+select,
+.eui-switch-wrap,
+.eui-btn,
+.eui-radio-wrap,
+.eui-checkbox-wrap {
+  cursor: pointer;
+  user-select: none;
+}
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #8995a1;
+}
+.eui-upload-file[type="file"] {
+  color: transparent;
+}
+input[type="range"]::-webkit-slider-thumb {
+  cursor: pointer;
+  height: 15px;
+  width: 15px;
+  background-color: #fff;
+  border: 1px solid #c4cbd3;
+  margin-top: -5px;
+  box-shadow: none;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #6cf;
+  border-color: #5be;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 5px;
+  box-shadow: none;
+}
+input[type="range"] {
+  width: 100%;
+  vertical-align: middle;
+  background-color: #dde3e9;
+  height: 5px;
+  box-shadow: none;
+}
+html,
+body {
+  height: 100%;
+  background: #dde3e9;
+  color: #434c56;
+}
+.clearfix {
+  clear: both;
+}
+.header {
+  height: 60px;
+  background: #fff;
+  padding: 5px 10px;
+}
+.header .logo {
+  width: 150px;
+  height: 50px;
+  background: url(/Public/Behind/images/new-logo.png) no-repeat center;
+  float: left;
+}
+.header .number {
+  float: right;
+  line-height: 50px;
+  font-size: 16px;
+}
+.special {
+  margin: 5px;
+  padding: 0 10px;
+  background: #fff;
+}
+.special .title {
+  font-size: 20px;
+  line-height: 50px;
+  border-bottom: 1px solid #dde3e9;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.special .data-list-tit {
+  background: #f1f4f7;
+}
+.special .data-list-tit,
+.special .data-list-item {
+  font-size: 0;
+}
+.special .data-list-tit > span,
+.special .data-list-item > span,
+.special .data-list-tit li,
+.special .data-list-item li {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 40px;
+  vertical-align: top;
+  padding: 0 5px;
+}
+.special .data-list-tit .num,
+.special .data-list-item .num {
+  width: 12%;
+  text-align: center;
+}
+.special .data-list-tit .class,
+.special .data-list-item .class {
+  width: 34%;
+}
+.special .data-list-tit .name,
+.special .data-list-item .name {
+  width: 20%;
+}
+.special .data-list-tit .sex,
+.special .data-list-item .sex {
+  width: 12%;
+}
+.special .data-list-tit .order,
+.special .data-list-item .order {
+  width: 22%;
+}
+.special .data-list-item {
+  border-bottom: 1px solid #c4cbd3;
+  position: relative;
+}
+.special .data-list-item:before {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 15px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid #c4cbd3;
+  border-right: 1px solid #c4cbd3;
+  transform: rotate(45deg);
+}
+.special .data-list-content {
+  display: none;
+}
+.special .data-list-item.open:before {
+  transform: rotate(135deg);
+}
+.special .data-list-item.open .data-list-info {
+  border-top: 1px solid #dde3e9;
+  padding: 5px;
+}
+.special .data-list-item.open .data-list-info li {
+  line-height: 30px;
+  width: 45%;
+  padding-left: 10px;
+}
+.special .data-list-item.open .data-list-info .index {
+  width: 10%;
+  text-align: center;
+  line-height: 20px;
+  height: 70px;
+  float: left;
+  border-right: 1px solid #dde3e9;
+  margin: -5px 0;
+  padding: 15px 5px;
+}
+.special .data-list-item.open .data-list-content {
+  display: block;
+}
+.special .data-list-item.open .data-list-content li {
+  font-size: 14px;
+}
+.special .data-list-item.open .data-list-content .content-list,
+.special .data-list-item.open .data-list-content .data-list-info {
+  border-bottom: 1px solid #dde3e9;
+  padding: 5px;
+}
+.special .data-list-item.open .data-list-content .content-list li,
+.special .data-list-item.open .data-list-content .data-list-info li {
+  line-height: 30px;
+  width: 45%;
+  padding-left: 10px;
+}
+.special .data-list-item.open .data-list-content .content-list .index,
+.special .data-list-item.open .data-list-content .data-list-info .index {
+  width: 10%;
+  text-align: center;
+  line-height: 20px;
+  height: 70px;
+  float: left;
+  border-right: 1px solid #dde3e9;
+  margin: -5px 0;
+  padding: 15px 5px;
+}
+.special .data-list-item.open .data-list-content .content-list {
+  background: #f5f8fb;
+}
+.special .data-list-item.open .data-list-content .content-list .index {
+  line-height: 70px;
+  padding: 0 5px;
+}
+.top,
+.top:hover,
+.top:active {
+  position: fixed;
+  right: 5px;
+  bottom: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 50px;
+}
+#think_page_trace_open {
+  display: none;
+}
+.search {
+  font-size: 0;
+}
+.search button,
+.search select,
+.search input {
+  border: 1px solid #c4cbd3;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.search select {
+  display: inline-block;
+  width: 32%;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+}
+.search select + select {
+  margin-left: 2%;
+}
+.search input {
+  width: 66%;
+  line-height: 40px;
+  padding: 0 10px;
+  margin-right: 2%;
+}
+.search button {
+  width: 32%;
+  line-height: 40px;
+  background: #5be;
+  color: #fff;
+  border: none;
+}
+
+.data-list-info .phone{
+  width:100% !important;
+  margin-top: 5px;
+  border-top:1px solid #dde3e9;
+}

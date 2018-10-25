@@ -8,7 +8,7 @@
         {{ csrf_field() }}
         <div class="box-body">
             <div class="form-group">
-                <label for="exampleInputFile">File input</label>
+                <label for="exampleInputFile">请上传文件</label>
                 <input type="file" name="file" id="exampleInputFile">
 
             </div>

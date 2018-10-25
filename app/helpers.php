@@ -18,7 +18,7 @@ if (! function_exists('dds')) {
     }
 }
 
-if (! function_exists('error_msg')) {
+if (! function_exists('msg')) {
     /**
      * 构造错误信息   系统之间报错
      * @param $code *错误码
@@ -26,8 +26,21 @@ if (! function_exists('error_msg')) {
      * @param  $data *数据接口
      * @return array
      */
-   function error_msg($code,$msg,$data=null){
+   function msg($code,$msg,$data=null){
        return ['code'=>$code,'msg'=>$msg,'data'=>$data];
    }
 }
+
+function current_time(){
+    return date('Y-m-d H:i:s');
+}
+
+function deal($data){
+    if($data['code']){
+        abort(404,$data['msg']);
+    }
+    return $data['data'];
+}
+
+
 ?>
