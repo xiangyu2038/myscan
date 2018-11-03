@@ -9,6 +9,7 @@
         <td>发货批次：{{$batch_data['batch_note']}}（ <span class="danger">{{$batch_data['batch_sn']}}</span> ）</td>
         <td>批次生成时间：{{$batch_data['batch_create_at']}}</td>
         <td>批次状态：{{$batch_data['batch_out_status']}}</td>
+        <td>批次来源：{{$batch_data['batch_source']}}</td>
     </tr>
 
     </thead>

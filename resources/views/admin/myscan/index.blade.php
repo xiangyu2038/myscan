@@ -5,7 +5,15 @@
     <div class="row">
         <div class="col-xs-2">
             <button class="btn btn-primary" id="btn-new" onclick="RE('{{route('admin.myscan.index.add_fa_huo')}}')">
-                <i class="fa fa-plus"></i> 新建
+                <i class="fa fa-plus"></i> 新建(线上数据转化)
+            </button>
+
+
+        </div>
+        <div class="col-xs-2">
+
+            <button class="btn btn-primary" id="btn-new" onclick="RE('{{route('admin.myscan.index.import_offline')}}')">
+                <i class="fa fa-plus"></i> 新建(线下数据导入)
             </button>
 
         </div>
@@ -33,7 +41,8 @@
                         <tbody>
                         <tr>
                             <th>序号</th>
-                            <th>批次编号</th>
+                            <th>编号</th>
+                            <th>来源</th>
                             <th>备注</th>
                             <th>出库状态</th>
                             <th>批次建立时间</th>
@@ -43,10 +52,18 @@
                         <tr>
                             <td>{{$key+1}}</td>
                             <td>{{$data['batch_sn']}}</td>
+                            <td>{{$data['source']}}</td>
                             <td>{{$data['note']}}</td>
                             <td>{{$data['out_status']}}</td>
                             <td>{{$data['created_at']}}</td>
-                            <td><button type="button"  class="btn btn-block btn-success btn-xs deal" onclick="RE('{{route('admin.myscan.index.deal_fa_huo',['id'=>$data['batch_id']])}}')">发货处理</button></td>
+                            <td>
+                                <div  class="col-md-4">
+                                        <button type="button"  class="btn btn-block btn-success btn-xs deal" onclick="RE('{{route('admin.myscan.index.deal_fa_huo',['id'=>$data['batch_id'],'source'=>$data['source']])}}')">发货处理</button>
+                                    </div>
+                                    <div  class="col-md-4">
+                                        <button type="button"  class="btn btn-block btn-success btn-xs del" data-url="{{route('admin.myscan.index.del_batch',['id'=>$data['batch_id']])}}" >删除批次</button>
+                                    </div>
+                            </td>
                         </tr>
                             @endforeach
                         </tbody></table>
@@ -66,6 +83,21 @@ $('.submit').click(function () {
    var key_word = $(" input[ name='key_word' ] ").val();
     var url = '{{URL::current()}}'+'?key_word='+key_word;
     RE(url);
-})
+});
+
+        $('.del').click(function () {
+              var url = $(this).attr('data-url');
+              alert('确定删除?');
+            $.ajax({
+                      type: "get",
+                      url: url,
+                      dataType: "json",
+                      success: function(data){
+                           alert(data.msg);
+                          location.reload()
+
+                      }
+                  });
+        })
     </script>
 @endsection

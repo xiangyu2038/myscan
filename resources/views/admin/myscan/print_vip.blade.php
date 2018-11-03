@@ -12,6 +12,7 @@
         <td>发货批次：{{$batch_data['batch_note']}}（ <span class="danger">{{$batch_data['batch_sn']}}</span> ）</td>
         <td>批次生成时间：{{$batch_data['batch_create_at']}}</td>
         <td>批次状态：{{$batch_data['batch_out_status']}}</td>
+        <td>批次来源：{{$batch_data['batch_source']}}</td>
     </tr>
 
     </thead>
@@ -96,10 +97,10 @@
                 <span>导出</span>
                 <div class="btn-list-wrap">
                     <div class="btn-item eui-btn">
-                        <a href="{{route('admin.myscan.index.export_kuai_di',['batch_id'=>$batch_data['batch_id']])}}">快递信息</a>
+                        <a href="{{route('admin.myscan.index.export_kuai_di',['batch_id'=>$batch_data['batch_id'],'batch_source'=>$batch_data['batch_source']])}}">快递信息</a>
                     </div>
                     <div class="btn-item eui-btn">
-                        <a onclick="RE('{{route('admin.myscan.index.export_kuai_di',['batch_id'=>$batch_data['batch_id']])}}')">发货统计</a>
+                        <a onclick="RE('{{route('admin.myscan.index.export_pro_info',['batch_id'=>$batch_data['batch_id'],'batch_source'=>$batch_data['batch_source']])}}')">发货统计</a>
                     </div>
                     <div class="btn-item eui-btn">
                         <a class="print-export" target="_blank">产品尺购买信息</a>
@@ -126,6 +127,7 @@
         <th>序号</th>
         <th>学生姓名</th>
         <th>条码</th>
+        <th>学校</th>
         <th>年级</th>
         <th>班级</th>
         <th>性别</th>
@@ -148,6 +150,7 @@
         <td>{{$key+1}}</td>
         <td>{{$v['name']}}</td>
         <td>{{$v['one_code']}}</td>
+        <td>{{$v['school']}}</td>
         <td>{{$v['grade']}}</td>
         <td>{{$v['grade_class']}}</td>
         <td>{{$v['sex']}}</td>
@@ -181,7 +184,7 @@
             <?php endforeach ; ?>
         </td>
         <td>已打印</td>
-        <td><a class="eui-btn" eui="sm,primary"  data-layer-url="{{route('admin.myscan.index.edit_address',['one_code'=>$v['one_code'],'batch_id'=>$batch_data['batch_id']])}}" data-layer-title="编辑收货地址">编辑</a></td>
+        <td><a class="eui-btn" eui="sm,primary"  data-layer-url="{{route('admin.myscan.index.edit_address',['one_code'=>$v['one_code'],'batch_id'=>$batch_data['batch_id'],'source'=>$batch_data['batch_source']])}}" data-layer-title="编辑收货地址">编辑</a></td>
     </tr>
     <?php endforeach ; ?>
     </tbody>
@@ -203,10 +206,12 @@
         function printVip(one_code,type) {
 
             var batch_id="{{$batch_data['batch_id']}}";
+            var batch_source = "{{$batch_data['batch_source']}}";
+
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'A4_vip'},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'A4_vip',batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
 
@@ -220,11 +225,11 @@
         }
         function printAllVip(key_word,print_model,print_type) {
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "get",
                 url: "{{route('admin.myscan.index.print_all_list')}}",
-                data: {key_word:key_word,batch_id:batch_id,print_model:print_model,print_type:print_type},
+                data: {key_word:key_word,batch_id:batch_id,print_model:print_model,print_type:print_type,batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
                     if(data.code==0){
@@ -240,11 +245,11 @@
 
         function printFashionList(one_code,type) {
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'fashion_list'},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'fashion_list',batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
                     if(data.code==0){
@@ -261,11 +266,11 @@
 
         function printKDList(one_code,type) {
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list'},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list',batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
                     if(data.code==0){
@@ -541,7 +546,7 @@
             LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
             LODOP.SET_PRINT_STYLEA(0,"Alignment",2);
             LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-            LODOP.ADD_PRINT_TEXT(118,45,241,24,data.school_name);
+            LODOP.ADD_PRINT_TEXT(118,45,241,24,data.school);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_TEXT(136,1,59,26,"年级：");
@@ -557,10 +562,10 @@
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.SET_PRINT_STYLEA(0,"Alignment",2);
             //LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-            LODOP.ADD_PRINT_TEXT(136,45,242,20,data.grade_name);
+            LODOP.ADD_PRINT_TEXT(136,45,242,20,data.grade);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
-            LODOP.ADD_PRINT_TEXT(155,45,239,20,data.class_name);
+            LODOP.ADD_PRINT_TEXT(155,45,239,20,data.class);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_TEXT(173,53,233,20,data.name);

@@ -1,10 +1,11 @@
-@extends('admin.layouts.eui.desk-master')
+@extends('admin.layouts.eui.desk-master-no-flag')
 @section('title', '处理零售发货')
 
 @section('content')
 
 <form class="eui-form" enctype="multipart/form-data"  >
     <input type="hidden" class="eui-ipt" name="address_id" value="{{$address_info['id']}}">
+    <input type="hidden" class="eui-ipt" name="source" value="{{$batch_source}}">
 
     <div class="eui-form-main">
         <label class="eui-form-label">收件人</label>

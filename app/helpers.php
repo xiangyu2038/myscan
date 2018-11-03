@@ -42,5 +42,9 @@ function deal($data){
     return $data['data'];
 }
 
+function exception($msg,$line){
+    throw new \Exception($msg,'错误码:'.$line);
+}
+
 
 ?>

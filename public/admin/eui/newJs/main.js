@@ -213,7 +213,7 @@ const Ajax=dt=>{
     // 成功
     const suc=json=>{
         ajaxStatus=false;
-        if(json.state==0){
+        if(json.code==0){
             // 去除弹出层
             $('.eui-layer.on .eui-layer-close').click();
             tabUpdate();

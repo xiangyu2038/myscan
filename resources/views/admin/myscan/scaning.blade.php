@@ -20,6 +20,7 @@
             <td>发货批次：{{$batch_data['batch_note']}}（ <span class="danger">{{$batch_data['batch_sn']}}</span> ）</td>
             <td>批次生成时间：{{$batch_data['batch_create_at']}}</td>
             <td>批次状态：{{$batch_data['batch_out_status']}}</td>
+            <td>批次来源：{{$batch_data['batch_source']}}</td>
         </tr>
 
         </thead>
@@ -705,8 +706,9 @@
                 echo $scaning_data['will_print_package'];
                 ?>;
                 const that=this;
+
                 $.ajax({
-                    url:"{{route('admin.myscan.index.scan_list',['batch_id'=>$batch_data['batch_id']])}}",
+                    url:"{!!route('admin.myscan.index.scan_list',['batch_id'=>$batch_data['batch_id'],'batch_source'=>$batch_data['batch_source']])!!}",
                     dataType:'json',
                     success:function(res){
                         res.data.no_scan.forEach(function(n,i){
@@ -857,17 +859,17 @@
         }
 
         function printFashionListS(one_code) {
-
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "get",
                 url: "{{route('admin.myscan.index.print_list_scan')}}",
-                data: {batch_id:batch_id, one_code:one_code,type:'fashion_list'},
+                data: {batch_id:batch_id,one_code:one_code,type:'fashion_list',batch_source:batch_source},
                 dataType: "json",
                 async:true,
                 success: function(data){
-                    console.log(data);
+
+                    //console.log(data);
                     if(data.code==0){
                         printFashionListPr(data.data);
                     }else{
@@ -1106,8 +1108,9 @@
 
         // 缺货打印-----产品清单
         function que_printFashionList(one_code) {
-            var batch_id="{$batch_data['id']}";
-            var data_type="{$bao_zhuang_mode}";
+            var batch_id="{{$batch_data['batch_id']}}";
+            var batch_source = "{{$batch_data['batch_source']}}";
+
             $.ajax({
                 type: "get",
                 url: "/Behind/SendGoods/printListScan",
@@ -1125,11 +1128,11 @@
         // 快递单
         function que_printKDList(one_code,con) {
             var batch_id="{{$batch_data['batch_id']}}";
-            alert(con);
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list',con:con},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list',con:con,batch_source:batch_source},
                 dataType: "json",
                 async:true,
                 success: function(data){

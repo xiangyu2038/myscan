@@ -8,11 +8,11 @@
         <tr>
             <td width="33%">订单编号：{{$vv['sell_order_sn']}}</td>
             <td width="33%">学生姓名：{{$vv['name']}}</td>
-            <td width="33%">学校名称：{{$vv['school_name']}}</td>
+            <td width="33%">学校名称：{{$vv['school']}}</td>
         </tr>
         <tr>
             <td width="33%">性别：{{$vv['sex']}}</td>
-            <td width="33%">年级/班级：{{$vv['grade_name']}}</td>
+            <td width="33%">年级/班级：{{$vv['grade']}}/{{$vv['grade_class']}}</td>
             <td width="33%">产品数量：{{$vv['total']['total_num']}}</td>
         </tr>
         </thead>

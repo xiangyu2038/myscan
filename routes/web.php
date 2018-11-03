@@ -94,6 +94,23 @@ Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
     ///编辑一类产品的产品编码 针对领带领结等产品
     Route::any('/editFashionSize', 'IndexController@editFashionSize')->name('admin.myscan.index.edit_fashion_size');
 
+    ///编辑一类产品的产品编码 针对领带领结等产品
+    Route::get('/delBatch', 'IndexController@delBatch')->name('admin.myscan.index.del_batch');
+
+    ///线下的发货数据导入
+    Route::any('/importOffline', 'IndexController@importOffline')->name('admin.myscan.index.import_offline');
+
+
+    ///线下导入的数据展示页面
+    Route::get('/OfflineDisplay', 'IndexController@OfflineDisplay')->name('admin.myscan.index.Offline_display');
+
+    ///展示表格详细内容
+    Route::get('/OfflineDetail/{uid}', 'IndexController@OfflineDetail')->name('admin.myscan.index.Offline_detail');
+
+    ///展示表格详细内容
+    Route::get('/convertOfflineData', 'IndexController@convertOfflineData')->name('admin.myscan.index.convert_offline_data');
+
+
     Route::get('api/{user}', function (App\User $user) {
         dd(__LINE__);
     });

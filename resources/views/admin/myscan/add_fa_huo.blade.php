@@ -96,6 +96,7 @@
         var data={
             fa_huo_time:f.find('[name=fa_huo_time]').val(),
             note:f.find('[name=note]').val(),
+            source:'线上零售',///数据来源
             order_sn:[]
         };
         $('.add-retail-list tbody tr').each(function(){

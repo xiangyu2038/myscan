@@ -18,5 +18,6 @@ class VerifyCsrfToken extends Middleware
         '/myscan/addFaHuo',
         '/myscan/editAddress',
         '/myscan/editFashionSize',
+        '/myscan/importOffline',
     ];
 }

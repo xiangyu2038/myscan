@@ -157,12 +157,35 @@ protected function import($filename,$ext = 'xls'){
     $PHPReader=$this->includeExcelImport($ext);
     $PHPExcel = $PHPReader->load($filename);
 
-    //获取表中的第一个工作表，如果要获取第二个，把0改为1，依次类推
-    $currentSheet = $PHPExcel->getSheet(0);
+     $all_sheets = $PHPExcel->getAllSheets();///所有的sheet
+
+   $excel_data = [];
+    foreach ($all_sheets as $v){
+        $excel_data[$v->getTitle()] = $this->getSheetData($v);
+     }
+     return $excel_data;
+
+}
+
+    public function getCellValue($currentSheet,$address){
+              ////转换文本格式
+            $cell =$currentSheet->getCell($address)->getValue();
+        if(is_object($cell))  $cell= $cell->__toString();
+        return $cell;
+
+    }
+
+    /**
+     * 获取一个sheet的值和名称
+     * @param
+     * @return mixed
+     */
+protected function getSheetData($currentSheet){
+    //$currentSheet = $PHPExcel->getSheet(0);
     //获取总列数
     $allColumn = $currentSheet->getHighestColumn();
     ++$allColumn;
-    $data=[];///接受数组   所有的导入的数据
+    $sheet_data=[];///接受数组   所有的导入的数据
     //获取总行数
     $allRow = $currentSheet->getHighestRow();
     ++$allColumn;
@@ -173,14 +196,20 @@ protected function import($filename,$ext = 'xls'){
             //数据坐标
             $address = $currentColumn . $currentRow;
             //读取到的数据，保存到数组$arr中
-            $data[$currentRow][$currentColumn] = $currentSheet->getCell($address)->getValue();
+            $sheet_data[$currentRow][$currentColumn] =$this->getCellValue($currentSheet,$address) ;
         }
     }
-    return $data;
+
+
+    //$sheet_title = $currentSheet->getTitle();
+
+    return $sheet_data;
 }
 
     /////////////////////////////////////////////////////////////////////////////////////
     /// /////////////////////////////////////////////////////////////////////////////////
+
+
 
 }
 

@@ -71,7 +71,24 @@ public function sellOrder(){
         }
     }
 
+    /**
+     * 有许多的产品  ts_sell_batch_print_fashion
+     * @param 
+     * @return mixed
+     */
 
+    public function sellBatchPrintFashions(){
+    return $this->hasMany('App\Models\Admin\SelllBatchPrintFashionModel','one_code','one_code');
+}
+
+/**
+ * 属于一个用户
+ * @param
+ * @return mixed
+ */
+    public function offlineUser(){
+        return $this->belongsTo('App\Models\Admin\OfflineUserModel','sell_order_sn','order_sn');
+    }
 
 
 }

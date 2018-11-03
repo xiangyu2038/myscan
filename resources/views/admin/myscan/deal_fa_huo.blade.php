@@ -8,6 +8,7 @@
         <td>发货批次：{{$batch_data['batch_note']}}（ <span class="danger">{{$batch_data['batch_sn']}}</span> ）</td>
         <td>批次生成时间：{{$batch_data['batch_create_at']}}</td>
         <td>批次状态：{{$batch_data['batch_out_status']}}</td>
+        <td>批次来源：{{$batch_data['batch_source']}}</td>
     </tr>
 
     </thead>
@@ -22,7 +23,7 @@
                 <span style="line-height: 28px;">发货包装</span>
             </h3>
             <span eui="pull-right">
-                                     <a class="eui-btn" eui="primary,sm"  onclick="RE('{{route('admin.myscan.index.print_vip',['batch_id'=>$batch_data['batch_id']])}}')">打印学生vip</a>
+                                     <a class="eui-btn" eui="primary,sm"  onclick="RE('{{route('admin.myscan.index.print_vip',['batch_id'=>$batch_data['batch_id'],'source'=>$batch_data['batch_source']])}}')">打印学生vip</a>
                                     <a class="eui-btn" eui="primary,sm" onclick="RE('{{route('admin.myscan.index.scaning',['batch_id'=>$batch_data['batch_id']])}}')">货物扫描</a>
                 <a class="eui-btn" eui="primary sm" onclick="RE('{{route('admin.myscan.index.end_scan',['batch_id'=>$batch_data['batch_id']])}}')">配送出库</a>
                                     </span>

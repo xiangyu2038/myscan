@@ -45,7 +45,7 @@ class CommonHelper extends Facade
 
             Storage::disk('public')->put($folder . '/' . $newFileName, file_get_contents($file));
 
-            $data=['url'=>config('filesystems.disks.public.root'). $folder . "/" . $newFileName,'ext'=>$file->getClientOriginalExtension()];
+            $data=['url'=>config('filesystems.disks.public.root'). $folder . "/" . $newFileName,'ext'=>strtolower($file->getClientOriginalExtension()),'or_file_name'=>$or_file_name];
 
             return msg(0,'处理成功',$data);
         }

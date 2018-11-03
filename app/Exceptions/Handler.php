@@ -50,14 +50,14 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
 
-//        if ($exception instanceof HttpException) {
-//            $code = $exception->getStatusCode();
-//            if (view()->exists('admin.error')) {
-//                $message  = $exception->getMessage();
-//                return response()->view('admin.error', ['code'=>$code,'message'=>$message], $exception->getStatusCode());
-//            }
-//
-//        }
+        if ($exception instanceof HttpException) {
+            $code = $exception->getStatusCode();
+            if (view()->exists('admin.error')) {
+                $message  = $exception->getMessage();
+                return response()->view('admin.error', ['code'=>$code,'message'=>$message], $exception->getStatusCode());
+            }
+
+        }
 
         return parent::render($request, $exception);
     }
