@@ -7,7 +7,7 @@
  */
 namespace App\Admin\Models;
 use Illuminate\Database\Eloquent\Model;
-class StoreFashionModel extends Model{
+class StoreFashionModel extends BaseModel{
     protected $table = 'ts_fashion_stock_sh';
 //    public $timestamps = false;
     protected $guarded = [];

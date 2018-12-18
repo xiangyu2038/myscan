@@ -49,11 +49,12 @@
     <tr>
         <th>序号</th>
         <th><a href="javascript:;" class="eui-btn pltui-all" data-st="0" eui="sm,primary">全选</a></th>
-        <th>订单号</th>
-        <th>金额</th>
-        <th>创建时间</th>
         <th>姓名</th>
         <th>性别</th>
+        <th>订单号</th>
+        <th>金额</th>
+        <th>是否转换成批次</th>
+        <th>创建时间</th>
 
     </tr>
     </thead>
@@ -62,11 +63,13 @@
     <tr>
         <td>{{$key+1}}</td>
         <td><input type="text" class="eui-checkbox" value="{{$v['order_sn']}}" title=" "></td>
-        <td>{{$v['order_sn']}}</td>
-        <td>{{$v['price']}}</td>
-        <td>{{$v['created_at']}}</td>
         <td>{{$v['student_info']['name']}}</td>
         <td>{{$v['student_info']['sex']}}</td>
+        <td>{{$v['order_sn']}}</td>
+        <td>{{$v['price']}}</td>
+        <td>{{$v['is_out']}}</td>
+        <td>{{$v['created_at']}}</td>
+
     </tr>
         @endforeach
     </tbody>

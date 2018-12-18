@@ -93,10 +93,11 @@
     //TODO 配送出库  wu_liu 物流方式 operate 操作人员 out_time 出库时间
     function out(wu_liu,operate,out_time) {
         var batch_id="{{$batch_data['batch_id']}}";
+        var batch_source="{{$batch_data['batch_source']}}";
         $.ajax({
             type: "get",
             url: "{{route('admin.myscan.index.go_out')}}",
-            data: {wu_liu:wu_liu,operate:operate,out_time:out_time,batch_id:batch_id},
+            data: {wu_liu:wu_liu,operate:operate,out_time:out_time,batch_id:batch_id,batch_source:batch_source},
             dataType: "json",
             success: function(data){
                 console.log(data);

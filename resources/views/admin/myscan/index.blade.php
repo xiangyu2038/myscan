@@ -2,21 +2,22 @@
 @section('title', '销售发货单列表')
 
 @section('content')
+
     <div class="row">
         <div class="col-xs-2">
-            <button class="btn btn-primary" id="btn-new" onclick="RE('{{route('admin.myscan.index.add_fa_huo')}}')">
-                <i class="fa fa-plus"></i> 新建(线上数据转化)
+            <button class="btn btn-primary" id="btn-new" onclick="RE('{{route('batch_source')}}')">
+                <i class="fa fa-plus"></i> 新建
             </button>
 
 
         </div>
-        <div class="col-xs-2">
+        {{--<div class="col-xs-2">--}}
 
-            <button class="btn btn-primary" id="btn-new" onclick="RE('{{route('admin.myscan.index.import_offline')}}')">
-                <i class="fa fa-plus"></i> 新建(线下数据导入)
-            </button>
+            {{--<button class="btn btn-primary" id="btn-new" onclick="RE('{{route('admin.myscan.index.import_offline')}}')">--}}
+                {{--<i class="fa fa-plus"></i> 新建(线下数据导入)--}}
+            {{--</button>--}}
 
-        </div>
+        {{--</div>--}}
     </div>
      {{--搜索按钮--}}
     <div class="row">

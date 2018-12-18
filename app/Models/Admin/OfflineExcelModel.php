@@ -3,7 +3,7 @@
 namespace App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
 
-class OfflineExcelModel extends Model
+class OfflineExcelModel extends BaseModel
 {
     //
     //指定表名

@@ -28,11 +28,15 @@ class IndexController extends Controller
                 $file_path = $res['data']['url'];
                 $ext = $res['data']['ext'];
                $data =  ExcelHelper::import($file_path,$ext);///导入的表格数据
-               $data =  ToolService::dealData($data);////处理完毕的数据
+               $temp = [];
+                foreach ($data as $v){
+                   $temp[]= ToolService::dealData($v);////处理完毕的数据
+               }
+
                $sheet_title = ['裤子','裙子','其他'];
                $head_arr=['姓名','产品名称','编码','尺码','数量'];
                 //////////////执行导出
-                ExcelHelper::exports($data,$head_arr,$title='导出表格',$sheet_title);
+                ExcelHelper::exports($temp[0],$head_arr,$title='导出表格',$sheet_title);
 
             }else{
                 abort('404',$res['msg']);

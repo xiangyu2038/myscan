@@ -2,7 +2,7 @@
 
 namespace App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
-class SellConfigModel extends Model
+class SellConfigModel extends BaseModel
 {
 
     protected $table = 'ts_sell_config';

@@ -10,6 +10,7 @@ use App\Models\Admin\OfflineExcelModel;
 use App\Models\Admin\OfflineUserModel;
 use App\Models\Admin\SellBatchModel;
 use App\Models\Admin\SelllBatchPrintFashionModel;
+use App\Models\Admin\SizeOrderModel;
 use App\Service\Admin\MyScanService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -53,12 +54,13 @@ class IndexController extends Controller
              return response()->json($res);
          }
 
-         $start = $request->get('start');
-         $end = $request->get('end');
+          $start = $request->get('start');
 
-        $all_sell_data =  MyScanService::getAllSellData($start,$end);
+          $end = $request->get('end');
 
-        return view('admin.myscan.add_fa_huo',compact('all_sell_data','start','end'));
+          $all_sell_data =  MyScanService::getAllSellData($start,$end);
+
+           return view('admin.myscan.add_fa_huo',compact('all_sell_data','start','end'));
     }
 
 
@@ -109,10 +111,8 @@ class IndexController extends Controller
 
         $search_con = $this->searchCon($request);
 
-
         $batch_data = deal(MyScanService::sellBatchData($batch_id));///批次信息
         ///
-
         $will_print_data = MyScanService::willPrintData($batch_id,$search_con,$batch_data);
 
 
@@ -135,7 +135,7 @@ public function printAllList(Request $request){
     $batch_source = $request->get('batch_source');///数据来源
     switch ($print_type){
         case "vip":
-            $print_data = MyScanService::printListVip($batch_id,$search_con);
+            $print_data = MyScanService::printListVip($batch_id,$search_con,$batch_source);
             break;
         case 'A4_vip':
             $print_data = MyScanService::printListVipWithA4($batch_id,$search_con,$batch_source);
@@ -161,7 +161,7 @@ public function printList(Request $request){
 
     switch ($print_type){
         case "vip":
-            $print_data = MyScanService::printListVip($batch_id,$search_con,$one_code);
+            $print_data = MyScanService::printListVip($batch_id,$search_con,$batch_source,$one_code);
             break;
         case 'fashion_list':
             $print_data = MyScanService::printListFashionList($batch_id,$batch_source,$one_code);
@@ -174,6 +174,7 @@ public function printList(Request $request){
             break;
 
     }
+
     return response()->json(msg(0,'ok',$print_data));
 }
 
@@ -224,6 +225,7 @@ protected function scaning(Request $request){
 
         $data = MyScanService::scanList($batch_id,$batch_source);
 
+
         return response()->json(msg(0,'ok',$data));
     }
 
@@ -257,9 +259,9 @@ protected function scaning(Request $request){
         $batch_id = $request->get('batch_id');///批次的id
 
         $one_code = $request->get('one_code');
+        $batch_source = $request->get('batch_source');///所选择的学校条码
 
-
-        $package_detail = MyScanService::packageDetail($batch_id,$one_code);
+        $package_detail = MyScanService::packageDetail($batch_id,$one_code,$batch_source);
 
 
         return view('admin.myscan.package_detail',compact('package_detail'));
@@ -272,7 +274,15 @@ protected function scaning(Request $request){
      * @return mixed
      */
 
-    public function prevKD(){
+    public function prevKD(Request $request){
+        $batch_id = $request->post('batch_id');///批次的id
+
+        $one_code = $request->post('one_code');///所选择的学校条码
+        $batch_source = $request->post('batch_source');///所选择的学校条码
+
+       $res = MyScanService::printListKDPrev($batch_id,$batch_source,$one_code);
+
+        MyScanService::saveKdRes($one_code,$res,config('app.user_config').'k_d_r');
 
 
     }
@@ -304,7 +314,7 @@ protected function scaning(Request $request){
 
         $one_code = $request->get('one_code');
         $type = $request->get('type');///fashion_list  数据来源模式
-        $batch_source = $request->get('batch_source');///批次来源
+        $batch_source = $request->get(' batch_source');///批次来源
 
 
         $print_data = MyScanService::printListScan($batch_id,$one_code,$type,$batch_source);
@@ -339,12 +349,17 @@ protected function scaning(Request $request){
         $wu_liu = $request->get('wu_liu');
         $operate = $request->get('operate');
         $out_time = $request->get('out_time');
-        $res = SellBatchModel::find($batch_id)->update(['out_status'=>'2','out_time'=>$out_time,'operate'=>$operate,'wu_liu'=>$wu_liu]);
-        if(!$res){
-            return response()->json(msg(1,'false'));
-        }
-        return response()->json(msg(0,'ok'));
+        $batch_source = $request->get('batch_source');
 
+try{
+    $res = SellBatchModel::find($batch_id)->update(['out_status'=>'2','out_time'=>$out_time,'operate'=>$operate,'wu_liu'=>$wu_liu]);
+    ////需要把出库的数据写入到数据库总
+    MyScanService::goOut($batch_id,$batch_source);
+    return response()->json(msg(0,'ok'));
+}catch (\Exception $e){
+    return response()->json(msg(1,'false'));
+
+}
     }
 
 
@@ -359,6 +374,7 @@ protected function scaning(Request $request){
         $fa_huo_data =  MyScanService::exportLiHuo($batch_id);
         $headArr = ['产品名称','产品编码','简写编码','尺码','数量'];
         $sheet_title=['理货单'];
+
         ExcelHelper::exports($fa_huo_data,$headArr,'理货单',$sheet_title);
     }
 
@@ -486,6 +502,7 @@ protected function scaning(Request $request){
       */
      public function importOffline(Request $request){
 
+
             if($request->method()=='POST'){
                 $res = CommonHelper::upload($request,'file');//上传文件  获取上传地址
                 $note = $request->get('note');
@@ -494,27 +511,19 @@ protected function scaning(Request $request){
                     $ext = $res['data']['ext'];//文件后缀
                      try{
                          $excel_data = ExcelHelper::import($file_path,$ext);//表格原始数据
-
                          $excel_type =  MyScanService::judgeExcel($excel_data);//去判断excel的类型  根据类型的不同来处理表格
-
-                             $excel_data = MyScanService::dealRawExcelData($excel_data,$excel_type);///对原始数据进行处理得到的结果
-
-
-
-                         ///存入数据库
+                         $excel_data = MyScanService::dealRawExcelData($excel_data,$excel_type);///对原始数据进行处理得到的结果
+                         /// ///存入数据库
                          $res = MyScanService::saveExcelData($res['data']['or_file_name'],$excel_data,$note,$excel_type);////对处理完毕的数据保存起来
                          if($res['code']==0){
                              return redirect()->route('admin.myscan.index.import_offline');///重定向到订单展示页面
                          }
-
-
                      }catch (\Exception $e){
                         abort(404,$e->getMessage());
                      }
                 }else{
                     abort('404',$res['msg']);
                 }
-
             }
          $search_con = $this->searchCon($request);
 
@@ -523,9 +532,7 @@ protected function scaning(Request $request){
                  $query->where('uid','like','%'.$search_con['key_word'].'%')->orwhere('excel_name','like','%'.$search_con['key_word'].'%');
              }
          })->orderBy('created_at','desc')->paginate(config('app.page_size'));
-
          $links = $data->links('admin.links');
-
          return view('admin.myscan.import_offline',compact('data','search_con','links'));
      }
 
@@ -560,7 +567,7 @@ protected function scaning(Request $request){
          $search_con = $this->searchCon($request);
 
          $data =  OfflineUserModel::formatGet($uid,$search_con);
-           //dd($data['data']->toArray());
+           //返回数据
          return view('admin.myscan.Offline_detail',compact('data','search_con'));
 
      }
@@ -578,7 +585,6 @@ protected function scaning(Request $request){
             $source  = $request -> get('source');
              try{
                $res =  MyScanService::convertOfflineData($excel_uid,$note,$fa_huo_time['date'],$source);///去转化
-
                  if($res['code']==0){
                      return redirect()->route('admin.myscan.index.index');///重定向到发货首页
                  }else{
@@ -587,9 +593,174 @@ protected function scaning(Request $request){
              }catch (\Exception $e){
                  abort(404,$e->getMessage());
              }
+     }
 
+     /**
+      * 删除一个线下导入的数据
+      * @param
+      * @return mixed
+      */
+     public function delExcel(Request $request){
+         $uid  = $request->get('uid');
+         \DB::beginTransaction();
+         try{
+             ///需要删除的订单列表
+           $user =   OfflineUserModel::where('excel_uid',$uid)->get()->pluck('order_sn')->toArray();
+             $res = OfflineCollectModel::whereIn('order_sn',$user)->delete();
+             $res = OfflineUserModel::where('excel_uid',$uid)->delete();
+             $res = OfflineExcelModel::where('uid',$uid)->delete();
+
+             \DB::commit();
+             return redirect()->back();
+         }catch (\Exception $e){
+
+             \DB::rollBack();
+             abort(404,$e->getMessage());
+         }
+     }
+     
+     /**
+      * 导出产品尺码购买信息 混灵顿
+      * @param 
+      * @return mixed
+      */
+     public function exportHld(Request $request){
+         $batch_id = $request -> get('batch_id');
+         $batch_source = $request ->get('batch_source');
+         $res = MyScanService::exportHld($batch_id,$batch_source);
+
+         $sheet_title = [];
+         foreach ($res as $key=>$v){
+             $sheet_title[] = $key;
+         }
+
+         $res = array_values($res);
+
+         $headArr=['产品编码/尺码','箱号','数量','对应条形码','姓名','年级','性别'];
+
+         ExcelHelper::exports($res,$headArr,'导出表格',$sheet_title);
+         try{
+             $res = MyScanService::exportHld($batch_id,$batch_source);
+
+             $sheet_title = [];
+             foreach ($res as $key=>$v){
+                 $sheet_title[$key] = $key;
+             }
+
+             $res = array_values($res);
+
+             $headArr=['产品编码/尺码','箱号','数量','对应条形码','姓名','年级','性别'];
+
+             ExcelHelper::exports($res,$headArr,'导出表格',$sheet_title);
+         }catch (\Exception $e){
+             abort(404,$e->getMessage());
+         }
 
      }
 
+     /**
+      * 换货
+      * @param
+      * @return mixed
+      */
+      public function changFashion(Request $request){
+          $type = $request -> get('type');
+          $scan_sn = $request -> get('scan_sn');
+          $o_fashion_code = $request -> get('o_fashion_code');
+          $r_fashion_code=$request -> get('r_fashion_code');
+
+          $res = MyScanService::changFashion(compact('type','scan_sn','o_fashion_code','r_fashion_code'));
+
+          return response()->json($res);
+      }
+      
+      /**
+       *
+       * @param 
+       * @return mixed
+       */
+      public function convertWithNewBatch(Request $request){
+          $batch_id = $request -> get('batch_id');///批次id
+          $batch_model = \App\Models\Admin\SellBatchModel::where('id',$batch_id)->with('sellBatchPrintEnd.sellBatchPrintFashions')->with('sellBatchPrintEnd.scanStudent.studentDetails')->first();
+
+          $que_data = SellBatchModel::queData($batch_model);///本批次的缺货数据
+
+         $note='批次'.$batch_model->batch_sn.'的缺货数据';
+          $fa_huo_time=current_time();
+          $order_sns = array_column($que_data,'order_sn');
+         $res = SellBatchModel::add($que_data,$fa_huo_time,$note,$order_sns,$batch_model->source,$batch_model->batch_sn);
+
+          return redirect()->route('admin.myscan.index.index',['batch_id'=>$res['data']]);///重定向到订单展示页面
+
+      }
+
+      /**
+       * 线上数据选择界面
+       * @param
+       * @return mixed
+       */
+      public function batchSource(){
+          return view('admin.myscan.batch_source');
+      }
+
+      /**
+       * 预售数据转化页面
+       * @param
+       * @return mixed
+       */
+      public function sizeOrderList(Request $request){
+
+          $search_con = $this->searchCon($request);
+
+          $size_order = SizeOrderModel::where(function ($query)use($search_con){
+              if($search_con['key_word']){
+                  $query->where('code','like','%'.$search_con['key_word'].'%')->orwhere('name','like','%'.$search_con['key_word'].'%');
+              }
+          })->where('type','1')->paginate(config('app.page_size'));
+          $links = $size_order->links('admin.links');
+
+          return view('admin.myscan.size_order_list',compact('size_order','links','search_con'));
+
+      }
+
+      /**
+       * 对一个预售进行处理
+       * @param
+       * @return mixed
+       */
+      public function dealSizeOrder(Request $request){
+
+
+       $order_id = $request->get('order_id');
+
+       $size_order = SizeOrderModel::where('order_id',$order_id)->with('batch.batchDetails')->with('sizeOrderConfig.configFashion.fashion')->first();
+
+       $size_order_all_fashion = SizeOrderModel::hasAllFashions($size_order);
+
+       return view('admin.myscan.deal_size_order',compact('size_order','size_order_all_fashion'));
+
+      }
+
+      /**
+       * 给一一个预售新建一个批次
+       * @param
+       * @return mixed
+       */
+    public function addSizeOrderBatch(Request $request){
+
+        $order_id = $request -> post('order_id');
+
+        $note  = $request -> post('note');
+        $source  = '微信预售';///数据来源 肯定是微信预售了
+        $fashion_code_s = $request -> post('fashion_code');
+
+        $fa_huo_time  = current_time();///发货时间 肯定是当前时间了
+
+        $res =  SizeOrderModel::addBatch($order_id,$note,$fashion_code_s,$source,$fa_huo_time);
+
+        return response()->json($res);
+
+
+    }
 
 }

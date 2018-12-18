@@ -76,7 +76,7 @@
     </tr>
     <?php endforeach ; ?>
     <a href="javascript:;" onclick="RE('{{route('admin.myscan.index.export_li_huo',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >导出理货单</a>
-
+    <a href="javascript:;" onclick="RE('{{route('convert_with_new_batch',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >本批缺货数据一键转换为新的批次</a>
     </div>
     </tbody>
 </table>

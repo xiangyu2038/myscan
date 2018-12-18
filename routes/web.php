@@ -15,7 +15,14 @@
 //    return view('welcome');
 //});
 Route::get('tests', function () {
-   dd(__LINE__);
+
+$batch_model = \App\Models\Admin\SellBatchModel::find(2);
+    \App\Models\Admin\SellBatchModel::queData($batch_model);
+
+
+echo 'da';
+
+
 });
 
 ////测试
@@ -107,14 +114,41 @@ Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
     ///展示表格详细内容
     Route::get('/OfflineDetail/{uid}', 'IndexController@OfflineDetail')->name('admin.myscan.index.Offline_detail');
 
-    ///展示表格详细内容
+    ///转化表格内容为发货数据
     Route::get('/convertOfflineData', 'IndexController@convertOfflineData')->name('admin.myscan.index.convert_offline_data');
+
+    ///删除一个表格的内容
+    Route::get('/delExcel', 'IndexController@delExcel')->name('admin.myscan.index.del_excel');
+
+
+    ///导出产品尺码购买信息
+    Route::get('/exportHld', 'IndexController@exportHld')->name('admin.myscan.index.export_hld');
+
+    //换货
+    Route::get('/changFashion', 'IndexController@changFashion')->name('admin.myscan.index.chang_fashion');
+
+    //换货
+    Route::get('/convertWithNewBatch', 'IndexController@convertWithNewBatch')->name('convert_with_new_batch');
+
+    //选择批次数据来源
+    Route::get('/batchSource', 'IndexController@batchSource')->name('batch_source');
+
+    //预售列表
+    Route::get('/sizeOrderList', 'IndexController@sizeOrderList')->name('size_order_list');
+
+
+    //给一个预售新建一个批次
+    Route::any('/dealSizeOrder', 'IndexController@dealSizeOrder')->name('deal_size_order');
+    //给一个预售新建一个批次
+    Route::post('/addSizeOrderBatch', 'IndexController@addSizeOrderBatch')->name('add_size_order_batch');
+
 
 
     Route::get('api/{user}', function (App\User $user) {
         dd(__LINE__);
     });
-});
+}
+);
 
 Route::namespace('Admin\Tool')->prefix('tool')->group(function () {
     Route::any('/', 'IndexController@index')->name('admin.tool.index.index');

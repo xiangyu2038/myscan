@@ -3,7 +3,7 @@
 namespace App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
 
-class OfflineUserModel extends Model
+class OfflineUserModel extends BaseModel
 {
     //
     //指定表名
@@ -39,6 +39,12 @@ class OfflineUserModel extends Model
         }elseif($excel_type == 'taobao'){
               ///淘宝的稍微不一样
             $array['order_sn'] = $b['order_sn'];
+            $array['export_order_sn'] = $b['export_order_sn'];
+            $array['school'] = $b['school'];
+            $array['grade'] = $b['grade'];
+            $array['class'] = $b['class'];
+        }elseif($excel_type == 'normal'){
+            $array['order_sn'] = $this->orderSn();
             $array['export_order_sn'] = $b['export_order_sn'];
             $array['school'] = $b['school'];
             $array['grade'] = $b['grade'];

@@ -2,9 +2,10 @@
 
 namespace App\Admin\Models;
 
+use App\Models\Admin\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 
-class MenuModel extends Model
+class MenuModel extends BaseModel
 {
     //
     //指定表名

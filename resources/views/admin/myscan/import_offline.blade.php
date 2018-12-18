@@ -78,11 +78,14 @@
                             <td>{{$v['note']}}</td>
                             <td>{{$v['created_at']}}</td>
                             <td>
-                                <div  class="col-md-6">
+                                <div  class="col-md-4">
                                     <button type="button"  class="btn btn-block btn-success btn-xs deal" onclick="RE('{{route('admin.myscan.index.Offline_detail',['uid'=>$v['uid']])}}')">查看详情</button>
                                 </div>
-                                <div  class="col-md-6">
+                                <div  class="col-md-5">
                                     <button type="button"  class="btn btn-block btn-success btn-xs deal" onclick="RE('{{route('admin.myscan.index.convert_offline_data',['uid'=>$v['uid'],'note'=>$v['excel_name'],'fa_huo_time'=>$v['created_at'],'source'=>'线下导入'])}}')">转化到发货列表</button>
+                                </div>
+                                <div  class="col-md-3">
+                                    <button type="button"  class="btn btn-block btn-success btn-xs deal" onclick="RE('{{route('admin.myscan.index.del_excel',['uid'=>$v['uid']])}}')">删除</button>
                                 </div>
                             </td>
                         </tr>
@@ -104,7 +107,7 @@
         $(':submit').click(function () {
             $('#myModal').modal('show');
             $("#form").submit();
-        })
+        });
         $('.submit').click(function () {
             var key_word = $(" input[ name='key_word' ] ").val();
             var url = '{{URL::current()}}'+'?key_word='+key_word;

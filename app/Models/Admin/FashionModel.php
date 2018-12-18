@@ -2,48 +2,11 @@
 
 namespace App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
-class FashionModel extends Model
+class FashionModel extends BaseModel
 {
 
     protected $table = 'ts_fashion';
     protected $guarded = [];
-
-    //public $timestamps = false;
-
-    /**
-     * 关联操作员【NEW】
-     *
-     * @author wumengmeng <wu_mengmeng@foxmail.com>
-     * @return mixed
-     */
-    public function operator()
-    {
-        return $this->belongsTo('model\shop\Manager', 'operator_id')->select('id', 'name');
-    }
-
-    public function fashion_type()
-    {
-        return $this->belongsTo('model\shop\Fashiontype', 'type_id');
-    }
-
-    public function fashion_detail()
-    {
-        return $this->hasOne('model\shop\FashionDetail', 'fashion_id', 'id');
-    }
-//    public function setSexAttribute($value){
-//        switch ($value){
-//            case 1:
-//                return '男';
-//                break;
-//            case 2:
-//                return '女';
-//                break;
-//            case 3:
-//                return '同';
-//                break;
-//        }
-//    }
-
     public function getSexAttribute($value)
     {
         switch ($value) {
@@ -62,61 +25,224 @@ class FashionModel extends Model
         }
     }
 
+    public function stockBoxDetail(){
+        return $this->hasMany('App\Models\Admin\StockBoxDetailModel','fashion_code','code');
+    }
 
-    /**
-     * 获取简单的产品库数组
-     *
-     * @author daijun <daijun_wb@huoyunren.com>
-     * @return array
-     */
-    public function get_simple_fashion()
-    {
-        $arrFashionTmp = Fashion::where('status', 1)->get(['id', 'name', 'code'])->toArray();
-        if (empty($arrFashionTmp))
-            return ['state' => -1, '暂无数据'];
-        $arrFashion = [];
-        foreach ($arrFashionTmp as $key => $value) {
-            $arrFashion[$value['id']]['id'] = $value['id'];
-            if (empty($value['code']))
-                $arrFashion[$value['id']]['name'] = $value['name'] . '';
-            else
-                $arrFashion[$value['id']]['name'] = $value['name'] . '-' . $value['code'];
-        }
-        return ['state' => 0, 'content' => $arrFashion];
+    public function boxDetail(){
+        return $this->hasMany('App\Models\Admin\BoxDetailModel','fashion_code','code');
+    }
+
+    public function stockDetail(){
+        return $this->hasMany('App\Models\Admin\StockDetailModel','fashion_code','code');
+    }
+
+    public function stockZT(){
+        return $this->hasMany('App\Models\Admin\StockZTModel','fashion_code','code');
+    }
+    public function stockDJ(){
+        return $this->hasMany('App\Models\Admin\StockDJModel','fashion_code','code');
     }
 
     /**
-     * 获取产品列表【NEW】
-     *
-     * @author wumengmeng <wu_mengmeng@foxmail.com>
-     * @param $arrSearch
-     * @param $arrAdmin
-     * @param $arrPage
-     * @return array
+     * 这个产品所拥有的库存
+     * @param 
+     * @return mixed
      */
-    public function get_data($arrSearch, $arrAdmin, $arrPage)
-    {
-        if ($arrAdmin['admin_group_id'] <= 0)
-            return ['state' => 1, 'content' => '用户分组ID不能为空'];
-        if ($arrAdmin['admin_id'] <= 0)
-            return ['state' => 2, 'content' => '用户ID不能为空'];
-        $data = Fashion::with('operator')
-            //按搜索条件查询
-            ->where(
-                function ($query)
-                use ($arrSearch) {
-                    if (isset($arrSearch['key_word']) && $arrSearch['key_word']) {
-                        $query->orWhere('code', 'like', '%' . $arrSearch['key_word'] . '%')->orWhere('old_code', 'like', '%' . $arrSearch['key_word'] . '%')->orWhere('name', 'like', '%' . $arrSearch['key_word'] . '%')->orWhere('EN_name', 'like', '%' . $arrSearch['key_word'] . '%')->orWhere('real_name', 'like', '%' . $arrSearch['key_word'] . '%');
-                    }
-                }
-            )
-            ->where('status', 1)
-            ->select('id', 'name', 'code', 'old_code', 'sex', 'created_at', 'operator_id')
-            ->orderBy('created_at', 'DESC')->orderBy('id', 'DESC')->paginate($arrPage['per_page'], $arrPage['current_page'])->toArray();
+    public function stock(){
+        ////首先查询现货库存
 
-        if ($data['total'] == 0)
-            return ['state' => -1, 'content' => '暂无数据'];
-        else
-            return ['state' => 0, 'content' => $data];
+         $x_h_stock =  $this->hasXHStock();
+        ////查询在途库存
+         $z_t_stock = $this->hasZTStock();
+       ////查询冻结库存
+         $d_j_stock = $this->hasDJStock();
+
+        return compact('x_h_stock','z_t_stock','d_j_stock');
+
+    }
+
+    /**
+     * 这个商品有多少现货库存
+     * @param
+     * @return mixed
+     */
+    public function hasXHStock(){
+      /////首先查询在箱子里的库存
+        $box_stock = $this->hasBoxStock();
+        /////库位里的库存
+        $stock = $this->hasStock();
+
+
+        $res = array_merge($box_stock,$stock);
+
+         //////合并起来
+        return $res;
+
+    }
+
+    /**
+     * 查询在途库存
+     * @param
+     * @return mixed
+     */
+public function hasZTStock(){
+
+   $temp = [];
+   foreach ($this->stockZT as $v){
+       $temp[] = this($v,['fashion_name','fashion_code','fashion_size','fashion_num']);
+   }
+   return $temp;
+}
+
+/**
+ * 查询冻结库存
+ * @param
+ * @return mixed
+ */
+    public function hasDJStock(){
+        $temp = [];
+        foreach ($this->stockDJ as $v){
+            $temp[] = this($v,['fashion_name','fashion_code','fashion_size','fashion_num']);
+        }
+        return $temp;
+    }
+
+
+    /**
+     * 这个产品有多少是装在箱子里的
+     * @param
+     * @return mixed
+     */
+    public function  hasBoxStock(){
+        ////首先查询这个商品
+        $box_sn = array_unique(pick_up(this($this->boxDetail,['box'=>['box_sn','chen_xiang_yu_']]),'box_sn'));
+         ///所有的在库位中的箱子
+        $all_box_sn = StockBoxModel::all()->pluck('box_sn')->toArray();
+        $all_box_sn = array_unique($all_box_sn);
+        $temp_box_sn = [];////有用的箱子
+        foreach ($box_sn as $v){
+            if(in_array($v,$all_box_sn)){
+                $temp_box_sn[] = $v;
+            }
+        }
+
+        $fashion = this($this->boxDetail,['fashion_name','fashion_code','fashion_size','fashion_num','box'=>['box_sn','stock_box'=>['stock'=>['stock_sn','stock_name','floor'],'chen_xiang_yu_'],'chen_xiang_yu_']]);
+
+        $temp = [];
+        foreach ($fashion as $v){
+            if(in_array($v['box_sn'],$temp_box_sn)){
+                $temp[] = $v;
+            }
+        }
+       return $temp;
+
+//        return  this($this-> box,['fashion_name','fashion_code','fashion_size','fashion_num','box'=>['box_sn','stock'=>['location','chen_xiang_yu_'],'chen_xiang_yu_']]);
+    }
+
+    /**
+     * 这个产品直接放在库位里的库存
+     * @param
+     * @return mixed
+     */
+    public function hasStock(){
+        return  this($this-> stockDetail,['fashion_name','fashion_code','fashion_size','fashion_num','stock'=>['stock_sn','stock_name','floor'],'box_sn']);
+    }
+
+    /**
+     * 本产品说拥有的账面数量
+     * @param
+     * @return mixed
+     */
+    public function hasPaperNum(){
+        $stock = $this->hasXHStock($this);
+
+        $box_stock_num = isset($stock['box_stock']['fashion_num'])?$stock['box_stock']['fashion_num']:0;
+        $stock_num = isset($stock['stock']['fashion_num'])?$stock['stock']['fashion_num']:0;
+
+         return  $box_stock_num + $stock_num;
+    }
+
+
+    /**
+     * 对扫描枪进来的编号进行格式化
+     * @param
+     * @return mixed
+     */
+    public function fashionCode($scan_fashion){
+        $scan_fashion=trim($scan_fashion);
+        $a = strripos($scan_fashion,'A');
+        $array=[];
+        $array['fashion_code']=substr($scan_fashion,0,$a+1);
+        $array['fashion_size']=substr($scan_fashion,$a+1);
+        $array['fashion_num']=1;
+
+        return $array;
+
+    }
+
+    /**
+     * 对相同尺码 相同编码的数据进行去重
+     * @param
+     * @return mixed
+     */
+
+    public function assortFashion($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+            $array[$v['fashion_code']][$v['fashion_size']][]=$v;
+        }
+
+        $one = function ($data){
+            $num = 0 ;
+            foreach ($data as $v){
+                $num = $num + $v['fashion_num'];
+            }
+
+            $data[0]['fashion_num'] = $num;
+            return $data [0];
+        };
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+            foreach ($v as $vv){
+                $new_array[]=$one($vv);
+            }
+        }
+        return $new_array;
+
+
+    }
+
+
+    public function assortFashionWithStock($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+            $array[$v['fashion_code']][$v['fashion_size']][$v['stock']['stock_sn']][]=$v;
+        }
+
+        $one = function ($data){
+            $num = 0 ;
+            foreach ($data as $v){
+                $num = $num + $v['fashion_num'];
+            }
+
+            $data[0]['fashion_num'] = $num;
+            return $data [0];
+        };
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+            foreach ($v as $vv){
+               foreach ($vv as $vvv)
+                $new_array[]=$one($vvv);
+            }
+        }
+
+        return $new_array;
+
+
     }
 }

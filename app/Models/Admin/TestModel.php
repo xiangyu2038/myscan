@@ -4,17 +4,13 @@ namespace App\Models\Admin;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TestModel extends Model
+class TestModel extends BaseModel
 {
     //
     //指定表名
-    protected $table = 'test';
+    protected $table = 'ts_a_test';
 
-//指定主键
-    protected $primaryKey = 'id';
-
-//是否开启时间戳
-    public $timestamps = true;
+    protected $guarded = [];
 
 
 

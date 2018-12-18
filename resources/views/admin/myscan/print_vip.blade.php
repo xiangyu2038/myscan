@@ -103,7 +103,7 @@
                         <a onclick="RE('{{route('admin.myscan.index.export_pro_info',['batch_id'=>$batch_data['batch_id'],'batch_source'=>$batch_data['batch_source']])}}')">发货统计</a>
                     </div>
                     <div class="btn-item eui-btn">
-                        <a class="print-export" target="_blank">产品尺购买信息</a>
+                        <a class="print-export" onclick="RE('{{route('admin.myscan.index.export_hld',['batch_id'=>$batch_data['batch_id'],'batch_source'=>$batch_data['batch_source']])}}')">产品尺购买信息</a>
                     </div>
                 </div>
             </div>
@@ -139,6 +139,7 @@
         <th>缺货情况</th>
         <th>换货情况</th>
         <th>是否打印</th>
+        <th>收货地址</th>
         <th>编辑</th>
     </tr>
     </thead>
@@ -184,6 +185,7 @@
             <?php endforeach ; ?>
         </td>
         <td>已打印</td>
+        <td>{{$v['address']}}</td>
         <td><a class="eui-btn" eui="sm,primary"  data-layer-url="{{route('admin.myscan.index.edit_address',['one_code'=>$v['one_code'],'batch_id'=>$batch_data['batch_id'],'source'=>$batch_data['batch_source']])}}" data-layer-title="编辑收货地址">编辑</a></td>
     </tr>
     <?php endforeach ; ?>
@@ -203,7 +205,7 @@
         eui.init('.eui-checkbox,.eui-select');
         ///TODO 打印学生vip  one_code 为学生的条码 为数组  示例 one_code=['XX6b5ff29202','XX6b5ff2920f']
         // printVip(one_code);
-        function printVip(one_code,type) {
+        function printVip(one_code,type,print_type) {
 
             var batch_id="{{$batch_data['batch_id']}}";
             var batch_source = "{{$batch_data['batch_source']}}";
@@ -211,12 +213,11 @@
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'A4_vip',batch_source:batch_source},
+                data: {batch_id:batch_id, one_code:one_code,print_type:print_type,batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
-
                     if(data.code==0){
-                        printVipPr(data.data,type);
+                        printVipPr(data.data,type,print_type);
                     }else{
                         eui.prompts('没有需要打印的');
                     }
@@ -301,8 +302,8 @@
         $('.print-vip').click(function(){
             alert('即将开始打全部========================================================================================');
             var type = $(this).attr('data-type');
-
-            printVip(getCode(),type);
+            var print_type = 'vip';///数据获取类型
+            printVip(getCode(),type,print_type);
         });
         // 打印全部学生
         $('.print-allvip').click(function(){
@@ -311,7 +312,7 @@
 
             var key_word=$(" input[ name='key_word' ] ").val();
             var print_model = $(this).attr('data-type');///打印模式
-            var print_type = 'A4_vip';///数据获取类型
+            var print_type = 'vip';///数据获取类型
 
             printAllVip(key_word,print_model,print_type);
         });
@@ -350,20 +351,38 @@
             //arr=['XXe0843d5e99','XXe0843d5eaa'];
 
             LODOP=getLodop();
-            $.each(arr,function (k,v) {
-                $.each(v,function (kk,vv) {
-                    CreatePrintPageWithA4(vv);
+
+            if(print_type == 'vip'){
+                $.each(arr,function (k,v) {
+                    $.each(v,function (kk,vv) {
+
+                        CreatePrintPage(vv);
+                        //CreatePrintPageWithA4(vv);
+                    });
+
+                    if(print_model=='preview'){
+                        LODOP.PREVIEW();
+                    }else{
+                        LODOP.PRINT();
+                    }
+
+
                 });
+            }else{
+                $.each(arr,function (k,v) {
+                    $.each(v,function (kk,vv) {
+                        CreatePrintPageWithA4(vv);
+                    });
 
-                if(print_model=='preview'){
-                    LODOP.PREVIEW();
-                }else{
-                    LODOP.PRINT();
-                }
+                    if(print_model=='preview'){
+                        LODOP.PREVIEW();
+                    }else{
+                        LODOP.PRINT();
+                    }
 
 
-            });
-
+                });
+            }
 //        for (j = 1; j <=3; j++) {
 //            CreatePrintPage();
 //        };
@@ -384,10 +403,10 @@
                 LODOP.SET_PRINT_STYLEA(0,"Bold",1);
                 //  LODOP.ADD_PRINT_TEXT(10,5,215,13,"空白分隔符");
             }else{
-                LODOP.ADD_PRINT_TEXT(10,5,215,13,"学校:"+data.school_name);
+                LODOP.ADD_PRINT_TEXT(10,5,215,13,"学校:"+data.school);
                 LODOP.SET_PRINT_STYLEA(0,"FontSize",7);
                 LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-                LODOP.ADD_PRINT_TEXT(22,5,215,13,"年级:"+data.grade_name+" 班级:"+data.class_name);
+                LODOP.ADD_PRINT_TEXT(22,5,215,13,"年级:"+data.grade+" 班级:"+data.grade_class);
                 LODOP.SET_PRINT_STYLEA(0,"FontSize",7);
                 LODOP.SET_PRINT_STYLEA(0,"Bold",1);
                 LODOP.ADD_PRINT_TEXT(34,5,215,13,"姓名:"+data.name+" 性别:"+data.sex);
@@ -459,13 +478,13 @@
             var num=302;
 //console.log(PRO);
             ////////////产品清单
-            if(data.sell_fashions.length){
+            if(data.scan.length){
                 LODOP.ADD_PRINT_TEXT(250,100,100,20,"产品清单");
                 LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                 LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
                 LODOP.ADD_PRINT_TEXT(280,-2,596,20,"-----------------------------------------------");
 
-                $.each(data.sell_fashions,function (key,v) {
+                $.each(data.scan,function (key,v) {
                     LODOP.ADD_PRINT_TEXT(num,2,210,20,v.fashion_name +" X"+v.fashion_num + "      规格 "+v.fashion_size+"\r\n编码:"+v.fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
@@ -488,7 +507,8 @@
                 num=num+52;
 
                 $.each(data.scan_huan,function (key,v) {
-                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v);
+
+                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.o_fashion_code+'  换 '+v.r_fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
                     LODOP.ADD_PRINT_TEXT(num+28,-8,606,20,"-----------------------------------------------------");
@@ -509,7 +529,7 @@
                 num=num+52;
 
                 $.each(data.scan_que,function (key,v) {
-                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.name +" X"+v.fashion_num + "      规格 "+v.fashion_size+"\r\n编码:"+v.fashion_code);
+                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.fashion_name +" X"+v.fashion_num + "      规格 "+v.fashion_size+"\r\n编码:"+v.fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
                     LODOP.ADD_PRINT_TEXT(num+28,-8,606,20,"-----------------------------------------------------");
@@ -538,7 +558,7 @@
             LODOP.SET_PRINT_MODE("PRINT_NOCOLLATE",1);
 
 
-            LODOP.ADD_PRINT_TEXT(220,38,241,20,data.note);
+            LODOP.ADD_PRINT_TEXT(220,38,241,20,data.batch_note);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",7);
             LODOP.ADD_PRINT_TEXT(77,1,281,25,"哈芙琳—校服专家 高端定制");

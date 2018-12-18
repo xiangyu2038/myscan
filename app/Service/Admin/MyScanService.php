@@ -4,6 +4,7 @@ namespace App\Service\Admin;
 
 use App\Helper\ArrayHelper;
 use App\Models\Admin\BookingAddressModel;
+use App\Models\Admin\BookingFashionOutStatusModel;
 use App\Models\Admin\BookingOrderModel;
 use App\Models\Admin\FashionModel;
 use App\Models\Admin\OfflineCollectModel;
@@ -13,6 +14,7 @@ use App\Models\Admin\ScanErrorModel;
 use App\Models\Admin\ScanStudentDetailsModel;
 use App\Models\Admin\ScanStudentModel;
 use App\Models\Admin\SellBatchPrintEndModel;
+use App\Models\Admin\SellFashionOutStatusModel;
 use App\Models\Admin\SelllBatchPrintFashionModel;
 use App\Models\Admin\SellOrderFashionModel;
 use App\Models\Admin\SellStudentModel;
@@ -22,6 +24,7 @@ use BarcodeBakery\Barcode\BCGcode128;
 use BarcodeBakery\Common\BCGColor;
 use BarcodeBakery\Common\BCGDrawing;
 use BarcodeBakery\Common\BCGFontFile;
+use Faker\Provider\Person;
 use Illuminate\Support\Facades\Facade;
 
 
@@ -73,11 +76,13 @@ class MyScanService extends Facade
      * @return mixed
      */
     protected function getAllSellData($start,$end){
+      ///所有零售发货的数据  这里是查询的条件
+        //开始时间 结束时间 如果存在开始时间和结束时间 那就进行开始和结束的查询操作
         if($start&&$end){
-            $sell_data =  BookingOrderModel::where('type',2)->with('sellStudent')->get();
+            $sell_data =  BookingOrderModel::where('type','2')->where('pay_status','2')->where('status','1')->with('sellStudent')->with('sellBatchPrint')->whereBetween('created_at',[$start,$end])->get();
             $links='';
         }else{
-            $sell_data =  BookingOrderModel::where('type',2)->with('sellStudent')->paginate(15);
+            $sell_data =  BookingOrderModel::where('type','2')->where('pay_status','2')->where('status','1')->with('sellStudent')->with('sellBatchPrint')->paginate(15);
             $links = $sell_data->links('admin.layouts.eui.links');
         }
 
@@ -101,6 +106,8 @@ class MyScanService extends Facade
              $array['price']=$one_sell_data->price;
              $array['created_at']=$one_sell_data->created_at;
              $array['student_info']=$this->studentInfo($one_sell_data->sellStudent);
+             $array['is_out']=BookingOrderModel::judgeSellIsC($one_sell_data);
+
              return $array;
          };///处理其中的一个
 
@@ -119,7 +126,7 @@ class MyScanService extends Facade
 protected function addSellBatch($order_sns,$fa_huo_time,$note,$source){
     $will_fa_fashion = $this->willFaFashion($order_sns);  ////从用户购买的产品 获取要发货的产品
 
-     return  $this->addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$source);
+    return  $this->addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$source);
 }
 
 /**
@@ -128,19 +135,21 @@ protected function addSellBatch($order_sns,$fa_huo_time,$note,$source){
  * @return mixed
  */
 
-protected function addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$source){
+protected function addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$source,$order_id=null,$que_sn=null){
 
     ///首先增加一个批次
-    $batch_create = function ($fa_huo_time,$note,$source){
+    $batch_create = function ($fa_huo_time,$note,$source,$order_id,$que_sn){
         $array = [];
         $array['batch_sn'] = $this->getPsSn('sell_');
         $array['note'] = $note;
         $array['out_time'] = $fa_huo_time;
         $array['source'] = $source;
+        $array['que_sn'] = $que_sn;
+        $array['order_id'] = $order_id;
         return $array;
     };///创建批次的保存数组
 ///
-    $batch_create = $batch_create($fa_huo_time,$note,$source);///创建批次的数据保存数组
+    $batch_create = $batch_create($fa_huo_time,$note,$source,$order_id,$que_sn);///创建批次的数据保存数组
 
     \DB::beginTransaction();
     try{
@@ -149,13 +158,13 @@ protected function addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$sour
             throw new \Exception('插入批次失败');
         }
         $sell_batch_print_end = $this->sellBatchPrintEnd($res->id,$order_sns);
-
+        $sell_batch_print_fashion = $this->sellBatchPrintFashion($res->id,$sell_batch_print_end,$will_fa_fashion);
         $ress =SellBatchPrintEndModel::Insert($sell_batch_print_end);
 
         if(!$ress){
             throw new \Exception('写入批次数据失败');
         }
-        $sell_batch_print_fashion = $this->sellBatchPrintFashion($res->id,$sell_batch_print_end,$will_fa_fashion);
+
 
         $resss = SelllBatchPrintFashionModel::Insert($sell_batch_print_fashion);
 
@@ -214,21 +223,21 @@ protected function addBatch($will_fa_fashion,$fa_huo_time,$note,$order_sns,$sour
      */
 
     protected function faHuoData($batch_id){
-        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->get();
+        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
 
         $f_sell_batch_print_data = $this->formatFaHuoData($sell_batch_print_data);//所有的用户的发货的数据
 
         //////对这些产品按照编码 尺码进行统计
          $all_fa_fashions = $this->allFaFashions($f_sell_batch_print_data);///所有人的买的产品
 
-        $fen_lei_with_size= $this->assortFashion($all_fa_fashions);////对所有的产品进行分类
+       // $fen_lei_with_size= $this->assortFashion($all_fa_fashions);////对所有的产品进行分类
 
         $need_pei_song_num = count($f_sell_batch_print_data);//本次要配送的包裹数量
 
         $all_fashion_num = $this->allFashionNum($all_fa_fashions);///获取所有商品的数量
 
 
-        $res = ['need_pei_song_num'=>$need_pei_song_num,'all_fashion_num'=>$all_fashion_num,'fen_lei_with_size'=>$fen_lei_with_size];
+        $res = ['need_pei_song_num'=>$need_pei_song_num,'all_fashion_num'=>$all_fashion_num,'fen_lei_with_size'=>$all_fa_fashions];
 
         return msg(0,'ok',$res);
 
@@ -291,7 +300,7 @@ return $array;
         foreach ($sell_orders as $v){
             $array[]=$one($v);
         }
-        $array = $this->assortFashion($array);
+        //$array = $this->assortFashion($array);
         return $array;
 
     }
@@ -303,9 +312,9 @@ return $array;
             //$array['fashion_id'] = $data['sellConfig']['fashion']['id'];
             $array['fashion_name'] = $data->sellConfig->name;
             $array['fashion_en_name'] = $data->sellConfig->en_name;
-            $array['fashion_code'] = $data->sellConfig->fashion->code;
+            $array['fashion_code'] = $data->sellConfig->fashion->code;///
             $array['fashion_num'] = $data->num;
-            $array['fashion_size'] = $data->chi_ma;
+            $array['fashion_size'] = $this->canScanFashionSize($data->chi_ma);
             $array['fashion_alias_code']  =  $data->sellConfig->fashion->alias_code;
             $array['fashion_price']  = $data->sellConfig->price;
 
@@ -315,14 +324,47 @@ return $array;
         $array = [];
 
         foreach ($sell_orders as $v){
-            $array[]=$one($v);
+            $res = SellOrderFashionModel::judgeIsRefund($v);///判断是否申请通过售后
+
+            if(!$res){
+                $array[]=$one($v);
+            }
+
         }
-        $array = $this->assortFashion($array);
+
+        $array = $this->assortFashionWithOrderSn($array);
         return $array;
 
     }
 
+    protected  function formatSellFashionHld($data,$sell_orders,$box_id){
+        $one = function ($fashions)use($data,$box_id){
+            $array = [];
 
+            //$array['fashion_id'] = $data['sellConfig']['fashion']['id'];
+            $array['fashion_code_size'] = $fashions->fashion_code.$fashions->fashion_size.'('.  $fashions->fashion_name.')';
+            $array['box_id'] = $box_id;
+
+            $array['fashion_num'] = $fashions->fashion_num;
+            $array['one_code'] = $data->one_code;
+
+            $array['name'] = $data->offlineUser->name;
+            $array['grade_class'] = $data->offlineUser->grade.$data->offlineUser->class;
+            $array['sex'] = $data->offlineUser->sex;
+
+
+            return $array;
+        };
+
+        $array = [];
+
+        foreach ($sell_orders as $v){
+            $array[]=$one($v);
+        }
+        //$array = $this->assortFashion($array);
+        return $array;
+
+    }
 
     /**
      * 统计所有人的要发货的产品
@@ -407,6 +449,44 @@ return $new_array;
 
     }
 
+
+    /**
+     * 对所有的产品进行分类
+     * @param  $all_fashions
+     * @return mixed
+     */
+    protected function assortFashionWithOrderSn($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+            $array[$v['order_sn']][$v['fashion_code']][$v['fashion_size']][]=$v;
+        }
+
+        $one = function ($data){
+            $num = 0 ;
+            foreach ($data as $v){
+                $num = $num + $v['fashion_num'];
+            }
+
+            $data[0]['fashion_num'] = $num;
+            return $data [0];
+        };
+
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+            foreach ($v as $vv){
+                foreach ($vv as $vvv){
+                    $new_array[]=$one($vvv);
+                }
+            }
+        }
+
+        return $new_array;
+
+
+    }
+
     /**
      * 获取所有商品的数量
      * @param 所有的商品 *包含fashion_num 字段
@@ -479,6 +559,18 @@ return $new_array;
     }
 
     /**
+     * 临时保存一个快递的信息
+     * @param
+     * @return mixed
+     */
+    protected function saveKdRes($one_code,$res,$path){
+        $content=serialize(['one_code'=>$one_code,'res'=>$res]);
+        // file_put_contents('scan/test', $content);//写入缓存文件
+        $data = file_put_contents($path, $content);//写入缓存文件
+
+    }
+
+    /**
      * 获取本批次所有人员的信息 发货信息 包括页码
      * @param $batch_id
      * @return mixed
@@ -493,25 +585,27 @@ return $new_array;
             if($this->batch_source == '线下导入'){
                $rel = 'offlineUser';
             } elseif($this->batch_source == '线上零售'){
-                $rel = 'sellOrder.sellStuden';
+                $rel = 'sellOrder.sellStudent';
+            }elseif($this->batch_source == '微信预售'){
+                $rel = 'bookingOrder.bookingStudent';
             }
                 $query->whereHas($rel, function ($query)use($search_con) {
                     $query->where('name', 'like', '%' . $search_con['key_word'] . '%');
                 });
           }
-      })->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->paginate(config('app.page_size'));
+      })->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->paginate(config('app.page_size'));
+
+        $this->load1($batch_data['batch_source'],$sell_batch_print_data_o);
+
 
         $f_sell_batch_print_data = $this->formatFaHuoDataDetails($sell_batch_print_data_o);//所有的用户的发货的数据  详细情况
-
 
 
         $sell_batch_print_data_o->appends(array('batch_id' => $batch_id));
         $links = $sell_batch_print_data_o->links('admin.layouts.eui.links');
 
 
-
         return ['data'=>$f_sell_batch_print_data,'links'=>$links];
-
     }
 
     /**
@@ -533,8 +627,11 @@ return $new_array;
             $array['sell_fashions'] = $this->formatSellFashion($data->sellBatchPrintFashions);
             $array['scan_student'] = $this->ScanStudent($data->scanStudent,$array['sell_fashions']);
 
-            $array['scan_que'] = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
-            $array['scan_huan'] = $this->scanHuan($data->scan_error);////换货的数据
+            $res = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
+            $array['scan_que'] = $res['que'];
+            $array['scan'] = $res['nor'];
+            $array['scan_huan'] = $this->scanHuan($data->scanError);////换货的数据
+            $array = $this->getAddress($array,$data,$this->batch_source);////地址信息
 
             $array = $this->getNoCommon($array,$data,$this->batch_source);
 
@@ -545,7 +642,6 @@ return $new_array;
         foreach ($sell_batch_print_data as $v){
             $array[] = $one($v);
         }
-
         return $array;
     }
     
@@ -588,7 +684,7 @@ return $new_array;
         $a = strripos($scan_fashion,'A');
         $array=[];
         $array['fashion_code']=substr($scan_fashion,0,$a+1);
-        $array['fashion_size']=substr($scan_fashion,$a+1,3);
+        $array['fashion_size']=substr($scan_fashion,$a+1);
         $array['fashion_num']=1;
 
         return $array;
@@ -637,22 +733,25 @@ return $new_array;
 
     protected function scanQue($scan_student,$sell_fashion){
 
-        $array=[];
+        $que=[];
+        $nor = [];
         foreach ($sell_fashion as $v){
             ////看看这个产品是否在扫描的里面
             $num=$this->isInScan($v['fashion_code'].$v['fashion_size'],$v['fashion_num'],$scan_student);
 
             if($num==='no_scan'){
-                $array[]=$v;
+                $que[]=$v;
             }elseif($num!=0){
-                $v['num']=$num;
-                $array[]=$v;
+                $v['fashion_num']=$num;
+                $que[]=$v;
+            }else{
+                $nor[] = $v;
             }
 
         }
 
 
-        return $array;
+        return compact('que','nor');
     }
 
 
@@ -663,7 +762,8 @@ return $new_array;
      */
 
     protected function scanHuan($scan_error){
-         if($scan_error){
+
+        if($scan_error){
              return $scan_error->toArray();
          }
          return [];
@@ -693,18 +793,30 @@ return $new_array;
      * @return mixed
      */
 
-    protected function printListVip($batch_id,$search_con,$one_code=null){
+    protected function printListVip($batch_id,$search_con,$batch_source,$one_code=null){
+        $this->batch_source = $batch_source;  //数据来源
 
-        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where(function ($query)use($one_code){
-          if($one_code){
-              $query->whereIn('one_code',$one_code);
-          }
-        })->whereHas('sellOrder.sellStudent',function ($query)use($search_con){
-            if(isset($search_con['key_word'])){
-                $query->where('name','like','%'.$search_con['key_word'].'%');
+        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where(function ($query)use($one_code,$search_con){
+            if($one_code){
+                ///如果存在one_code
+                $query->whereIn('one_code',$one_code);
             }
-        })->with('sellBatchPrintFashions')->with('sellOrder.sellStudent.school')->with('sellOrder.sellStudent.grade')->with('sellOrder.sellStudent.gradeClass')->get();
+            if($search_con['key_word']){
+                if($this->batch_source == '线下导入'){
+                    $rel = 'offlineUser';
+                } elseif($this->batch_source == '线上零售'){
+                    $rel = 'sellOrder.sellStudent';
+                }elseif($this->batch_source == '微信预售'){
+                    $rel = 'bookingOrder.bookingStudent';
+                }
+                $query->whereHas($rel,function ($query)use($search_con){
+                    $query->where('name','like','%'.$search_con['key_word'].'%');
+                });
+            }
 
+        })->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
+
+         $this->load1($batch_source,$sell_batch_print_data);
         $f_sell_batch_print_data = $this ->formatFaHuoDataDetailsWithVip($sell_batch_print_data);//对数据进行格式化
 
        return $f_sell_batch_print_data;
@@ -728,15 +840,19 @@ return $new_array;
              if($search_con['key_word']){
                  if($this->batch_source == '线下导入'){
                      $rel = 'offlineUser';
-                 } elseif($this->batch_source == '线上零售'){
-                     $rel = 'sellOrder.sellStuden';
+                 }elseif($this->batch_source == '线上零售'){
+                     $rel = 'sellOrder.sellStudent';
+                 }elseif($this->batch_source == '微信预售'){
+                     $rel = 'bookingOrder.bookingStudent';
                  }
                  $query->whereHas($rel,function ($query)use($search_con){
                      $query->where('name','like','%'.$search_con['key_word'].'%');
                  });
              }
 
-        })->with('sellBatchPrintFashions')->get();
+        })->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
+
+        $this->load1($batch_source,$sell_batch_print_data);
 
         $f_sell_batch_print_data = $this->formatFaHuoDataDetailsWithA4Vip($sell_batch_print_data);//对数据进行格式化
 
@@ -762,13 +878,9 @@ return $array;
         $one = function ($data){
             $array=[];
             $array['sell_id'] = $data->id;
-            $array['sell_order_sn'] = $data->sellOrder->order_sn;
+            $array['sell_order_sn'] = $data->order_sn;
             $array['one_code'] = $data->one_code;
-            $array['school_name'] = $data->sellOrder->sellStudent->school->name;
-            $array['name'] = $data->sellOrder->sellStudent->name;
-            $array['sex'] = $data->sellOrder->sellStudent->sex;
-            $array['grade_name'] = $data->sellOrder->sellStudent->grade->name;
-            $array['class_name'] = $data->sellOrder->sellStudent->gradeClass->name;
+           $array = $this->getNoCommon($array,$data,$this->batch_source);
 
             $array['fashion_info'] = $this->formatSellFashionWithVip($this->formatSellFashion($data->sellBatchPrintFashions));
 
@@ -881,10 +993,12 @@ return $array;
             if($one_code){
                 $query->whereIn('one_code',$one_code);
             }
-        })->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->get();
+        })->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->get();
        $batch_data = SellBatchModel::find($batch_id);
+       $this->load1($batch_source,$sell_batch_print_data_o);
 
         $f_sell_batch_print_data = $this->printFashionList($sell_batch_print_data_o,$batch_data);//所有的用户的发货的数据  详细情况
+
        return $f_sell_batch_print_data;
 
     }
@@ -908,11 +1022,15 @@ return $array;
             $array['sell_fashions'] = $this->formatSellFashion($data->sellBatchPrintFashions);
 
             $array['scan_student'] = $this->ScanStudent($data->scanStudent,$array['sell_fashions']);
-            $array['scan_que'] = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
-            $array['scan_huan'] = $this->scanHuan($data->scan_error);////换货的数据
-            $array['total'] = $this->allFashionNum($array['sell_fashions']);////换货的数据
+            $res = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
+            ///
+            $array['scan_que'] = $res['que'];
+            $array['scan'] = $res['nor'];
+
+            $array['scan_huan'] = $this->scanHuan($data->scanError);////换货的数据
             $array['total'] = $this->allFashionNum($array['sell_fashions']);////换货的数据
             $array['print_lengh']=$this->getPrintLength( $array['sell_fashions'], $array['scan_huan'], $array['scan_que']);
+
             return $array;
         };
 
@@ -959,6 +1077,15 @@ return $array;
      * @return mixed
      */
     protected function printListKD($batch_id,$batch_source,$one_code=null){
+
+         $send_model = 'old';
+         if($send_model == 'old'){
+             $res = $this->readCache(config('app.user_config').'k_d_r');
+             if($res['one_code'][0]==$one_code[0]){
+                return $res['res'];
+             }
+         }
+
         $this->batch_id = $batch_id;
         $this->batch_source = $batch_source;
         $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where(function ($query)use($one_code){
@@ -966,6 +1093,7 @@ return $array;
                 $query->whereIn('one_code',$one_code);
             }
         })->get();
+        $this->load1($batch_source,$sell_batch_print_data_o);
 
         $array = [];
         foreach ($sell_batch_print_data_o as $v){
@@ -976,6 +1104,35 @@ return $array;
             }
         }
         $new_array[]=$array;
+
+        return $new_array;
+
+    }
+   /**
+    * 提前获取快递单信息
+    * @param
+    * @return mixed
+    */
+    protected function printListKDPrev($batch_id,$batch_source,$one_code=null){
+        $this->batch_id = $batch_id;
+        $this->batch_source = $batch_source;
+        $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where(function ($query)use($one_code){
+            if($one_code){
+                $query->whereIn('one_code',$one_code);
+            }
+        })->get();
+        $this->load1($batch_source,$sell_batch_print_data_o);
+
+        $array = [];
+        foreach ($sell_batch_print_data_o as $v){
+            $array[] = $this->getPrintListKD($v);///去取快递模板
+            if(count($array)>9){
+                $new_array[]=$array;
+                $array=[];
+            }
+        }
+        $new_array[]=$array;
+
         return $new_array;
 
     }
@@ -989,11 +1146,11 @@ return $array;
     protected function getPrintListKD($data){
         set_time_limit(5);
        // $send_model=$this->readCache(config('app.user_config').'send_model');
+
         $k_d_res =  $this->getKDRes($data);////取快递返回结果
 
-        $this->saveKDInfoWithBatch($data['one_code'],$k_d_res);///按照批次保存快递信息
-
         if($k_d_res->Success){
+            $this->saveKDInfoWithBatch($data['one_code'],$k_d_res);///按照批次保存快递信息
             return $k_d_res->PrintTemplate;
         }else{
             return  '姓名'.$data['sellOrder']['bookingAddress']['name'].' 订单编号:'.$data['order_sn'].'  无法获取快递单'.PHP_EOL.'原因:'.$k_d_res->Reason;
@@ -1052,10 +1209,11 @@ return $array;
 
         // $send_model[0]='old';
         if($send_model[0]=='old'){
-
-            $eorder["OrderCode"] =substr( $data['order_sn'],4,20).'---'.$this->batch_id.'2';
+            // $eorder["OrderCode"] =substr( $data['one_code'],4,20).'---'.$this->batch_id.'2';
+            $eorder["OrderCode"] = $data['one_code'];
 
         }else{
+
             $eorder["OrderCode"] = $data['order_sn'].'---'.'new'.round(0,100);
         }
         //  $eorder["OrderCode"] = $k_d_one['order_sn'].'---'.'new'.round(0,100);
@@ -1100,7 +1258,7 @@ return $array;
 //电商加密私钥，快递鸟提供，注意保管，不要泄漏
         defined('AppKey') or define('AppKey', '4edad7f3-ebe0-4ecb-af99-f9e3f4bb98ea');
 //请求url，正式环境地址：http://api.kdniao.cc/api/Eorderservice    测试环境地址：http://testapi.kdniao.cc:8081/api/EOrderService
-        defined('ReqURL') or define('ReqURL', 'http://api.kdniao.cc/api/EOrderService');
+        defined('ReqURL') or define('ReqURL', 'http://api.kdniao.com/api/Eorderservice');
 
         $datas = array(
             'EBusinessID' => EBusinessID,
@@ -1111,10 +1269,9 @@ return $array;
         $appkey=AppKey;
         $datas['DataSign'] = $this->encrypt($requestData, $appkey);
 
-        //  $result=   $this->https_request(ReqURL,$datas);
-        //  dd($result);
+
         $result=$this->sendPost(ReqURL, $datas);
-//dd($result);
+
         //根据公司业务处理返回的信息......
 
         return $result;
@@ -1195,7 +1352,7 @@ return $array;
      * @return mixed
      */
 protected function scaningCollection($batch_id){
-    $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanStudent.studentDetails')->get();
+    $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->get();
 
     $package_num = count($sell_batch_print_data);  ///包裹数量
     $fashion_num = $this->fashionNum($sell_batch_print_data);
@@ -1243,7 +1400,7 @@ protected  function  hasScanPackAge($sell_batch_print_data){
     $array=[];
 
     foreach ($sell_batch_print_data as  $v){
-        if($v['scan_student']){
+        if($v['scanStudent']){
             $array[]=$v;
         }
     }
@@ -1280,18 +1437,21 @@ return $num;
  */
     protected function scanList($batch_id,$batch_source){
          $this->batch_source = $batch_source;
-        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanStudent.studentDetails')->get();
+        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->get();
+
+        $this->load1($batch_source,$sell_batch_print_data);///加载关系
+
         $all_list = $this->allList($sell_batch_print_data);////所有的列表
 
-        $is_scan_list = $this->isScanList($sell_batch_print_data);////全部扫描列表
+       $is_scan_list = $this->isScanList($sell_batch_print_data);////全部扫描列表
 
-        $no_all_scan_list = $this->noAllScanList($sell_batch_print_data);////没有全部扫描
+       $no_all_scan_list = $this->noAllScanList($sell_batch_print_data);////没有全部扫描
 
-        $no_scan = $this->noScan($sell_batch_print_data);
+       $no_scan = $this->noScan($sell_batch_print_data);
 
 
 
-        return ['no_scan'=>$no_scan,'scan'=>$is_scan_list,'que_scan'=>$no_all_scan_list,'all'=>$all_list];
+       return ['no_scan'=>$no_scan,'scan'=>$is_scan_list,'que_scan'=>$no_all_scan_list,'all'=>$all_list];
 
 
     }
@@ -1364,7 +1524,7 @@ protected function printPro($data){
             $array[] = $one($v);
       }
 
-     $array = $this->assortFashions($array);
+    // $array = $this->assortFashions($array);
     return $array;
 
 
@@ -1507,7 +1667,8 @@ protected function willScanData($data){
    foreach ($data->sellBatchPrintFashions as $v){
       $array[] = $one($v);
    }
-   $array = $this->assortFashions($array);
+
+   //$array = $this->assortFashions($array);
    return $array;
 
 }
@@ -1518,12 +1679,12 @@ protected function willScanData($data){
  * @return mixed
  */
 
-protected function packageDetail($batch_id,$one_code){
-    $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where('one_code',$one_code)->with('sellOrder.sellFashion.sellConfig.fashion')->with('sellOrder.sellStudent.school')->with('sellOrder.sellStudent.grade')->with('sellOrder.sellStudent.gradeClass')->with('scanError')->with('scanStudent.studentDetails')->get();
+protected function packageDetail($batch_id,$one_code,$batch_source){
+    $this->batch_source = $batch_source;
+    $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where('one_code',$one_code)->with('sellOrder.sellFashion.sellConfig.fashion')->with('scanError')->with('scanStudent.studentDetails')->get();
 
+    $this->load1($batch_source,$sell_batch_print_data_o);
     $f_sell_batch_print_data = $this->formatFaHuoDataDetails($sell_batch_print_data_o);//所有的用户的发货的数据  详细情况
-
-
     return $f_sell_batch_print_data;
 }
 
@@ -1581,8 +1742,6 @@ protected function printListScan($batch_id,$one_code,$type,$batch_source){
 
     $batch_data = SellBatchModel::find($batch_id);
 
-    
-
     $f_sell_batch_print_data = $this->printListScanF($sell_batch_print_data_o,$batch_data,$ss_scan_data);//所有的用户的发货的数据  详细情况
 
     return $f_sell_batch_print_data;
@@ -1606,10 +1765,14 @@ protected function printListScanF($sell_batch_print_data_o,$batch_data,$ss_scan_
         $array['sell_fashions'] = $this->formatSellFashion($data->sellBatchPrintFashions);
 
         $array['scan_student'] = $ss_scan_data;
-        $array['scan_que'] = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
-        $array['scan_huan'] = $this->scanHuan($data['scan_error']);////换货的数据
+        $res = $this->ScanQue($array['scan_student'],$array['sell_fashions']);////缺货的数据
+
+        $array['scan_que'] = $res['que'];
+        $array['scan'] = $res['nor'];
+        $array['scan_huan'] = $this->scanHuan($data['scanError']);////换货的数据
         $array['total'] = $this->allFashionNum($array['sell_fashions']);////换货的数据
         $array['print_lengh']=$this->getPrintLength( $array['sell_fashions'], $array['scan_huan'], $array['scan_que']);
+
         return $array;
     };
 
@@ -1660,7 +1823,7 @@ protected function getScanDataSS($vip,$batch_id){
 protected function endScan($batch_id,$batch_source){
 
    $this->batch_source =   $batch_source;
-    $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('scanStudent.studentDetails')->get();
+    $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('scanStudent.studentDetails')->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
 
     $scan_data = $this->formatChuKuData($sell_batch_print_data_o);//所有的用户的发货的数据
 
@@ -1868,7 +2031,7 @@ protected function needOutData($scan_data){
      * @return mixed
      */
     protected function exportLiHuo($batch_id){
-        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->get();
+        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
 
         $f_sell_batch_print_data = $this->formatFaHuoData($sell_batch_print_data);//所有的用户的发货的数据
         //////对这些产品按照编码 尺码进行统计
@@ -1907,7 +2070,9 @@ protected function needOutData($scan_data){
      */
     protected function exportKuaiDiData($batch_id,$batch_source){
        $this->batch_source = $batch_source;
-        $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->get();
+        $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanError')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->get();
+
+        $this->load1($batch_source,$sell_batch_print_data_o);
 
         $f_sell_batch_print_data = $this->formatFaHuoDataDetails($sell_batch_print_data_o);//所有的用户的发货的数据  详细情况
         $export_kuqi_di = $this->getKuaiDi($f_sell_batch_print_data);///只包含有快递的信息
@@ -1931,8 +2096,8 @@ protected function needOutData($scan_data){
     protected function exportProInfo($batch_id,$batch_source){
 
         $this->batch_source = $batch_source ;
-        $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('scanError')->with('scanStudent.studentDetails')->get();
-
+        $sell_batch_print_data_o =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('scanError')->with('scanStudent.studentDetails')->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
+        $this->load1($batch_source,$sell_batch_print_data_o);
         $f_sell_batch_print_data = $this->formatFaHuoDataDetails($sell_batch_print_data_o);//所有的用户的发货的数据  详细情况
         ////整理下数据为导出格式
 
@@ -2142,7 +2307,12 @@ protected function getKuaiDi($data){
             $data->name = $data->shou_huo_ren;
 
                return $data;
-           }
+           }elseif($batch_source == '微信预售'){
+            $order_sn  = SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->where('one_code',$one_code)->first()->sell_order_sn;///订单的编号
+
+            $data = BookingOrderModel::where('order_sn',$order_sn)->with('bookingAddress')->first();
+            return $data->bookingAddress;
+        }
 
 
 
@@ -2163,6 +2333,8 @@ protected function getKuaiDi($data){
              $address = BookingAddressModel::where('id',$address_id)->update(['name'=>$name,'phone'=>$tel,'province'=>$province,'city'=>$city,'area'=>$area,'detail'=>$detail]);
          }elseif($batch_source == '线下导入'){
              $address=  OfflineUserModel::where('id',$address_id)->update(['shou_huo_ren'=>$name,'phone'=>$tel,'province'=>$province,'city'=>$city,'area'=>$area,'detail'=>$detail]);
+         }elseif($batch_source == '微信预售'){
+             $address = BookingAddressModel::where('id',$address_id)->update(['name'=>$name,'phone'=>$tel,'province'=>$province,'city'=>$city,'area'=>$area,'detail'=>$detail]);
          }
 
         if($address){
@@ -2319,8 +2491,11 @@ return $img;
      */
 
     protected function willFaFashion($order_sns){
-      $order =   SellOrderFashionModel::whereIn('order_sn',$order_sns)->with('sellConfig.fashion')->get();
+      $order =   SellOrderFashionModel::whereIn('order_sn',$order_sns)->with('sellConfig.fashion')->with('sellFashionRefund')->get();
+      //////这里要去除售后申请的商品
+
        $format_order = $this->formatSellFashionWithAdd($order);
+
         return $format_order;
 
     }
@@ -2402,7 +2577,10 @@ protected function dealRawExcelSheet($sheet_data){
         $excel_data  = $this->deal1($sheet_data);
     }elseif($this->excel_type == 'taobao'){
         $excel_data  = $this->dealTaoBao($sheet_data);
+    }elseif($this->excel_type == 'normal'){
+        $excel_data  = $this->dealSt($sheet_data);///对标准的格式进行处理
     }
+
 
 
 
@@ -2428,6 +2606,8 @@ if($this->excel_type == 'zidingyi'){
     }
 }elseif($this->excel_type == 'taobao'){
     return $this->getPsSn('taobao_');
+}elseif($this->excel_type == 'normal'){
+    return $this->getPsSn('st_');
 }else{
     return '未发现订单编号';
 }
@@ -2451,6 +2631,8 @@ protected function getExcelXueBu($raw_excel_data){
         }
     }elseif($this->excel_type == 'taobao'){
         return 'taobao_学部';
+    }elseif($this->excel_type == 'normal'){
+        return 'st_学部';
     }else{
         return '未发现学部信息';
     }
@@ -2473,7 +2655,9 @@ protected function getExcelXueBu($raw_excel_data){
             }
         }elseif($this->excel_type == 'taobao') {
             return 'taobao_班级';
-        }else{
+        }elseif($this->excel_type == 'normal'){
+            return 'st_班级';
+        } else{
             return '未发现班级信息';
         }
     }
@@ -2495,6 +2679,8 @@ protected function getExcelXueBu($raw_excel_data){
             }
         }elseif($this->excel_type == 'taobao'){
             return 'taobao_学校';
+        }elseif($this->excel_type == 'normal'){
+            return 'st_学校';
         }else{
             return '未发现学校信息';
         }
@@ -2513,12 +2699,19 @@ protected function getExcelXueBu($raw_excel_data){
 
         $name_index =$this->getColumn('姓名',$raw_excel_data[$row]);
         $sex_index =$this->getColumn('性别',$raw_excel_data[$row]);
-        $shou_huo_index =$this->getColumn('收货人',$raw_excel_data[$row]);
-        $phone_index =$this->getColumn('电话',$raw_excel_data[$row]);
-        $address_province_index =$this->getColumn('省',$raw_excel_data[$row]);
-        $address_city_index =$this->getColumn('市',$raw_excel_data[$row]);
-        $address_area_index =$this->getColumn('区',$raw_excel_data[$row]);
-        $address_detail_index =$this->getColumn('详细地址',$raw_excel_data[$row]);
+
+        ////去判断本次导入的表格是否带地址
+        $bool =  $this->judgeHasAddress('收货人',$raw_excel_data[$row]);
+
+        if($bool){
+            $shou_huo_index =$this->getColumn('收货人',$raw_excel_data[$row]);
+            $phone_index =$this->getColumn('电话',$raw_excel_data[$row]);
+            $address_province_index =$this->getColumn('省',$raw_excel_data[$row]);
+            $address_city_index =$this->getColumn('市',$raw_excel_data[$row]);
+            $address_area_index =$this->getColumn('区',$raw_excel_data[$row]);
+            $address_detail_index =$this->getColumn('详细地址',$raw_excel_data[$row]);
+        }
+
 
          $fashion_name = $this->getExportFashionName($raw_excel_data[$row]);     ///获取表格中有效的产品名称字段
 
@@ -2532,12 +2725,22 @@ protected function getExcelXueBu($raw_excel_data){
             if($v[$name_index]){
                $all_student[$key]['name']=$v[$name_index];
                $all_student[$key]['sex']=$v[$sex_index];
-               $all_student[$key]['shou_huo']=$v[$shou_huo_index];
-               $all_student[$key]['phone']=$v[$phone_index];
-               $all_student[$key]['province']=$v[$address_province_index];
-               $all_student[$key]['city']=$v[$address_city_index];
-               $all_student[$key]['area']=$v[$address_area_index];
-               $all_student[$key]['detail']=$v[$address_detail_index];
+               if($bool){
+                   $all_student[$key]['shou_huo']=$v[$shou_huo_index];
+                   $all_student[$key]['phone']=$v[$phone_index];
+                   $all_student[$key]['province']=$v[$address_province_index];
+                   $all_student[$key]['city']=$v[$address_city_index];
+                   $all_student[$key]['area']=$v[$address_area_index];
+                   $all_student[$key]['detail']=$v[$address_detail_index];
+               }else{
+                   $all_student[$key]['shou_huo']='';
+                   $all_student[$key]['phone']='';
+                   $all_student[$key]['province']='';
+                   $all_student[$key]['city']='';
+                   $all_student[$key]['area']='';
+                   $all_student[$key]['detail']='';
+               }
+
                $fashions = $this->deal2($raw_excel_data,$fashion_index,$key,$v,$row);///获取每个人购买的产品信息以及尺码 数量
                $all_student[$key]['fashions']=$fashions;
            }
@@ -2556,10 +2759,51 @@ protected function getExcelXueBu($raw_excel_data){
     protected function dealTaoBao($raw_excel_data){
       $data = $this->t1($raw_excel_data);///对淘宝导入的格式做第一次处理 寻找相同昵称的人
       $data = $this->t2($data);///进行第二次整理 获取每个人的信息 格式化一下
-        ///
+        $data = $this->t2GiveFashionName($data);///给这些产品弄个名字
       return $data;
 
 
+    }
+
+    /**
+     * 自定义数据获取
+     * @param
+     * @return mixed
+     */
+    public function dealSt($sheet_data){
+       $one = function ($data){
+           $temp = [];
+           $temp['name'] = $data['A'];
+           $temp['sex'] = $data['B'];
+           $temp['shou_huo'] = $data['A'];
+           $temp['phone'] = $data['F'];
+           $temp['province'] = $data['G'];
+           $temp['city'] = $data['H'];
+           $temp['area'] = $data['I'];
+           $temp['detail'] = $data['J'];
+           $temp['order_sn'] = '';
+           $temp['school'] = $data['C'];
+           $temp['grade'] = $data['D'];
+           $temp['class'] = $data['E'];
+           $temp['export_order_sn'] = '';
+
+
+           $temp['fashions'] = $this->stF($data['K']);//获取产品信息
+           return $temp;
+       };
+
+
+        $temp = [];
+       foreach ($sheet_data as $key=>$v){
+           if($key == 1){
+               continue;
+           }
+           $temp[] = $one($v);
+
+       }
+        $temp = $this->t2GiveFashionName($temp);///给这些产品弄个名字
+
+      return $temp;
     }
 
     protected function deal2($raw_excel_data,$fashion_index,$row,$c,$e_row){
@@ -2846,19 +3090,27 @@ return $array;
  * @return mixed
  */
 public function getNoCommon($array,$data,$batch_source){
+
     if($batch_source=='线上零售'){
-        $array['school'] = $data->sellOrder->sellStudent->school->name;
-        $array['name'] = $data->sellOrder->sellStudent->name;
-        $array['sex'] = $data->sellOrder->sellStudent->sex;
-        $array['grade'] = $data->sellOrder->sellStudent->grade->name;
-        $array['grade_class'] = $data->sellOrder->sellStudent->gradeClass->name;
+        $array['school'] = $data['sellOrder']['sellStudent']['school']['name'];
+        $array['name'] = $data['sellOrder']['sellStudent']['name'];
+        $array['sex'] = $data['sellOrder']['sellStudent']['sex'];
+        $array['grade'] = $data['sellOrder']['sellStudent']['grade']['name'];
+        $array['grade_class'] = $data['sellOrder']['sellStudent']['gradeClass']['name'];
     }elseif($batch_source=='线下导入'){
         $array['school'] = $data->offlineUser->school;
         $array['name'] = $data->offlineUser->name;
         $array['sex'] = $data->offlineUser->sex;
         $array['grade'] = $data->offlineUser->grade;
         $array['grade_class'] = $data->class;
+    }elseif($batch_source=='微信预售'){
+        $array['school'] = $data['bookingOrder']['bookingStudent']['school']['name'];
+        $array['name'] = $data['bookingOrder']['bookingStudent']['name'];
+        $array['sex'] = $data['bookingOrder']['bookingStudent']['sex'];
+        $array['grade'] = $data['bookingOrder']['bookingStudent']['grade']['name'];
+        $array['grade_class'] = $data['bookingOrder']['bookingStudent']['gradeClass']['name'];
     }
+
    return $array;
 }
 
@@ -2887,6 +3139,14 @@ protected function getNoCommonAddress($data,$batch_source){
         $receiver["CityName"] = $data->offlineUser->city;
         $receiver["ExpAreaName"] = $data->offlineUser->area;
         $receiver["Address"] = $data->offlineUser->detail;
+    }elseif($batch_source=='微信预售'){
+        $receiver["Name"] =$data['BookingOrder']['bookingAddress']['name'];
+        //$receiver["Name"] =$k_d_one['re_name'];
+        $receiver["Mobile"] = $data['BookingOrder']['bookingAddress']['phone'];
+        $receiver["ProvinceName"] = $data['BookingOrder']['bookingAddress']['province'];
+        $receiver["CityName"] = $data['BookingOrder']['bookingAddress']['city'];
+        $receiver["ExpAreaName"] =$data['selBookingOrderlOrder']['bookingAddress']['area'];
+        $receiver["Address"] = $data['BookingOrder']['bookingAddress']['detail'];
     }
     return $receiver;
 }
@@ -2918,6 +3178,8 @@ protected function judgeExcel($excel_data){
                 return 'taobao';
             }elseif($vv['A'] == '自选__学生明细表'){
                 return 'zidingyi';
+            }elseif($vv['A'] == '姓名'){
+                return 'normal';///标准表格
             }else{
                 throw new \Exception('无效的导入规范 请检查表格格式规范');
             }
@@ -2964,14 +3226,13 @@ protected function t2($data){
           $temp['detail'] = $data[0]['K'];
           $temp['fashions'] = $this->t3($data);///获取产品数
         ///
-        if($this->excel_type == 'taobao'){
-            ////淘宝线下导入的有点不一样
+
             $temp['order_sn'] = $data[0]['C'];
             $temp['school'] = '学校';
             $temp['grade'] = '';
             $temp['class'] = '班级名称';
             $temp['export_order_sn'] = '';
-        }
+
 
         return $temp;
     };
@@ -2998,7 +3259,7 @@ protected function t3($data){
         $temp['re_fashion_code'] = implode(',',explode(' ',$data['L']));
         $temp['fashion_name'] = $data['G'];
         $temp['fashion_sex'] = '';
-        $temp['fashion_size'] = $data['I'];
+        $temp['fashion_size'] = $this->t4($data['I']);
         $temp['fashion_num'] = $data['J'];
         return $temp;
     };//////一个产品信息
@@ -3007,9 +3268,361 @@ protected function t3($data){
     foreach ($data as $v){
         $temp[] = $one($v);
     }
+
     return $temp;
 }
 
+/**
+ * 加载关系 1
+ * @param
+ * @return mixed
+ */
+
+public function load1($batch_source,$sell_batch_print_data){
+    if( $batch_source == '线下导入'){
+        $sell_batch_print_data->load('offlineUser');
+    }elseif($batch_source == '线上零售'){
+        $sell_batch_print_data->load('sellOrder.sellStudent.school','sellOrder.sellStudent','sellOrder.sellStudent.grade','sellOrder.sellStudent.gradeClass','sellOrder.bookingAddress');
+    }elseif($batch_source == '微信预售'){
+        $sell_batch_print_data->load('bookingOrder.bookingStudent.school','bookingOrder.bookingStudent.grade','bookingOrder.bookingStudent.gradeClass','bookingOrder.bookingAddress');
+    }
 }
+
+/**
+ * 标准导入格式的产品表
+ * @param 
+ * @return mixed
+ */
+public function stF($data){
+
+    $one = function ($data){
+        $data =  explode('X',$data);
+         $size = substr($data[0],-3);
+         $code = substr($data[0],0,strlen($data[0])-3);
+
+        $temp = [];
+        $temp['fashion_num']=$data['1'];
+        $temp['fashion_sex']='';
+        $temp['fashion_code']=$code;
+        $temp['fashion_name']='';
+        $temp['fashion_size']=$size;
+        return $temp;
+    };////
+
+    $data =  explode(',',$data);
+    $temp = [];
+   foreach ($data as $v){
+       $temp[] = $one($v);
+   }
+   return $this->assortFashion($temp);
+}
+
+/**
+ * 淘宝导入进来的 有cm要去掉
+ * @param
+ * @return mixed
+ */
+public function t4($data){
+
+    if(strpos($data,'cm')){
+        return substr($data,0,strlen($data)-2);
+    }
+    return $data;
+}
+
+/**
+ * 给淘宝的产品附加上名字
+ * @param
+ * @return mixed
+ */
+public function t2GiveFashionName($data){
+    $temp_fashions = [];
+
+    foreach ($data as $v){
+        foreach ($v['fashions'] as $vv){
+            $temp_fashions[] = $vv['fashion_code'];
+        }
+    }
+    $fashions =  array_unique($temp_fashions);
+    $fashion =  FashionModel::whereIn('code',$fashions)->get();
+    foreach ($data as &$v){
+        foreach ($v['fashions'] as &$vv){
+                   $be_fashion = $this->t5($vv['fashion_code'],$fashion);
+                   $vv['fashion_name'] = $be_fashion['real_name'];
+                   $vv['fashion_sex'] = $be_fashion['fashion_sex'];
+        }
+        unset($vv);
+    }
+    unset($v);
+    return $data;
+
+}
+
+/**
+ * t5类型函数
+ * @param
+ * @return mixed
+ */
+public function t5($fashion_code,$fashions){
+         foreach ($fashions as $v){
+             if($fashion_code == $v->code){
+                 return $v;
+             }
+         }
+         return ['real_name'=>'','fashion_sex'=>''];
+
+}
+
+/**
+ * 导出混灵顿的格式
+ * @param 
+ * @return mixed
+ */
+
+protected function exportHld($batch_id,$batch_source){
+
+        $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->has('sellBatchPrintFashions')->get();
+
+    $this->load1($batch_source,$sell_batch_print_data);
+
+
+    $this -> assinBox($sell_batch_print_data);///去分配一下箱号
+
+    $f_sell_batch_print_data = $this->formatHld($sell_batch_print_data);//所有的用户的发货的数据
+
+
+
+     ////去寻找每一个尺码 所对应的人的信息 以及件数
+    $hei_hei = $this->heiHei($f_sell_batch_print_data);
+
+     /////转化成导出格式
+     $ha_ha = $this->haHa($hei_hei);
+     return $ha_ha;
+    //////对这些产品按照编码 尺码进行统计
+}
+
+/**
+ * 惠灵顿导出格式格式化
+ * @param
+ * @return mixed
+ */
+
+public function formatHld($sell_batch_print_data){
+    $one = function ($data){
+
+        $temp['fashions'] =$this->formatSellFashionHld($data,$data->sellBatchPrintFashions,$data->box_id);
+        return $temp;
+    };
+
+   $temp = [];
+    foreach ($sell_batch_print_data as $key=> $v){
+        $temp [] = $one($v);
+    }
+
+    return $temp;
+
+}
+/**
+ * 判断是否带地址
+ * @param
+ * @return mixed
+ */
+public function judgeHasAddress($index,$column_data){
+    foreach ($column_data as $key=> $v){
+        if($v==$index){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/**
+ * 笑一个
+ * @param
+ * @return mixed
+ */
+public function heiHei($f_sell_batch_print_data){
+
+  $temp = [];
+    foreach ($f_sell_batch_print_data as $v){
+        foreach ($v['fashions'] as $vv){
+            $temp[$vv['grade_class'].'('.trim($vv['sex']).')'][$vv['fashion_code_size']][] =$vv;
+        }
+    }
+
+    //ksort($temp);
+
+    foreach ($temp as &$v){
+        ksort($v);
+    }
+    unset($v);
+    return $temp;
+}
+
+/**
+ * 哈一个
+ * @param
+ * @return mixed
+ */
+public function haHa($data){
+
+$one  = function ($data,$key){
+
+    if($key == 0){
+    return $data;
+}
+$data['fashion_code_size'] = '';
+
+return $data;
+};
+    $temp = [];
+    foreach ($data as $key=>$v){
+        foreach ($v as  $vkey=>$vv){
+               array_unshift($vv,['fashion_code_size'=>$vkey,'box_id'=>'','fashion_num'=>'','one_code'=>'','name'=>'','grade_class'=>'','sex'=>'']);
+            foreach ($vv as $vvkey=> $vvv){
+               $temp[$key][]=$one($vvv,$vvkey);
+           }
+        }
+    }
+
+    return $temp;
+}
+/**
+ * 分配箱号
+ * @param
+ * @return mixed
+ */
+public function assinBox($data){
+    $temp = [];
+    foreach ($data as $v){
+        $temp[$v->offlineUser->grade.$v->offlineUser->class][]=$v;
+    }
+
+    $new = [];
+    foreach ($temp as $v){
+        foreach ($v as $key=> $vv){
+            $vv['box_id'] = $key+1;
+            $new[] = $vv;
+        }
+    }
+    return $new;
+}
+
+/**
+ * changFashion
+ * @param
+ * @return mixed
+ */
+    protected function changFashion($data){
+        $build = ScanErrorModel::build($data);
+        $res = ScanErrorModel::create($build);
+
+        if(!$res){
+           return ['code'=>0,'msg'=>'换货失败'];
+        }
+        return ['code'=>1,'msg'=>'换货成功'];
+
+    }
+
+    /**
+     * 执行出库动作 需要把数据写入到出库列表里
+     * @param
+     * @return mixed
+     */
+     protected function goOut($batch_id,$batch_source){
+
+         $sell_batch_print_data =  SellBatchPrintEndModel::where('sell_batch_id',$batch_id)->with('sellBatchPrintFashions')->with('scanStudent.studentDetails')->has('sellBatchPrintFashions')->get();
+
+
+
+         $temp = [];
+         foreach ($sell_batch_print_data as $v){
+            if($v->scanStudent){
+                $has_fashions = ScanStudentModel::hasFashions($v->scanStudent);
+                if($batch_source == '线上零售'){
+                    $temp[] = SellFashionOutStatusModel::build($has_fashions,$v);
+                }elseif($batch_source == '线下导入'){
+                    $temp[]=[];////线下导入 不需要进行操作
+                }elseif($batch_source == '微信预售'){
+                    $temp[] = BookingFashionOutStatusModel::build($has_fashions,$v);
+                }
+
+            }
+         }
+
+         $other_temp = [];
+         foreach ($temp as $v){
+             foreach ($v as $vv){
+                 $other_temp[] = $vv;
+             }
+         }
+
+         ////保存数据
+         if($batch_source == '线上零售'){
+             SellFashionOutStatusModel::Insert($other_temp);
+         }elseif($batch_source == '微信预售'){
+             BookingFashionOutStatusModel::Insert($other_temp);
+         }
+
+         return true;
+
+     }
+
+     protected function canScanFashionSize($fashion_Size){
+
+           $a = explode('-',$fashion_Size);
+           if(count($a)>1){
+               return '0'.$a[1];
+           }else{
+               return $a[0];
+           }
+
+
+     }
+
+     /**
+      * 获取地址
+      * @param
+      * @return mixed
+      */
+     public function getAddress($array,$data,$batch_source){
+
+         if($batch_source=='线上零售'){
+             $receiver["Name"] =$data['sellOrder']['bookingAddress']['name'];
+             //$receiver["Name"] =$k_d_one['re_name'];
+             $receiver["Mobile"] = $data['sellOrder']['bookingAddress']['phone'];
+             $receiver["ProvinceName"] = $data['sellOrder']['bookingAddress']['province'];
+             $receiver["CityName"] = $data['sellOrder']['bookingAddress']['city'];
+             $receiver["ExpAreaName"] =$data['sellOrder']['bookingAddress']['area'];
+             $receiver["Address"] = $data['sellOrder']['bookingAddress']['detail'];
+             $array['address'] = $receiver["ProvinceName"].$receiver["CityName"].$receiver["ExpAreaName"].$receiver["Address"];
+         }elseif($batch_source=='线下导入'){
+
+             $receiver["Name"] =$data->offlineUser->shou_huo_ren;
+             //$receiver["Name"] =$k_d_one['re_name'];
+             $receiver["Mobile"] = $data->offlineUser->phone;
+             $receiver["ProvinceName"] = $data->offlineUser->province;
+             $receiver["CityName"] = $data->offlineUser->city;
+             $receiver["ExpAreaName"] = $data->offlineUser->area;
+             $receiver["Address"] = $data->offlineUser->detail;
+
+             $array['address'] = $receiver["ProvinceName"].$receiver["CityName"].$receiver["ExpAreaName"].$receiver["Address"];
+         }elseif($batch_source=='微信预售'){
+             $receiver["Name"] =$data['BookingOrder']['bookingAddress']['name'];
+             //$receiver["Name"] =$k_d_one['re_name'];
+             $receiver["Mobile"] = $data['BookingOrder']['bookingAddress']['phone'];
+             $receiver["ProvinceName"] = $data['BookingOrder']['bookingAddress']['province'];
+             $receiver["CityName"] = $data['BookingOrder']['bookingAddress']['city'];
+             $receiver["ExpAreaName"] =$data['selBookingOrderlOrder']['bookingAddress']['area'];
+             $receiver["Address"] = $data['BookingOrder']['bookingAddress']['detail'];
+             $array['address'] = $receiver["ProvinceName"].$receiver["CityName"].$receiver["ExpAreaName"].$receiver["Address"];
+         }
+         return $array;
+     }
+
+
+}
+
 
 

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @param
  * @return mixed
  */
-class BookingAddressModel extends Model
+class BookingAddressModel extends BaseModel
 {
 
     protected $table = 'ts_booking_address_info';

@@ -19,5 +19,6 @@ class VerifyCsrfToken extends Middleware
         '/myscan/editAddress',
         '/myscan/editFashionSize',
         '/myscan/importOffline',
+        '/myscan/addSizeOrderBatch',
     ];
 }

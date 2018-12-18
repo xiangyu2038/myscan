@@ -67,6 +67,7 @@ class ExcelHelper extends Facade
         $objWriter->save('php://output'); //文件通过浏览器下载
     }
     protected function sheet($data,&$objPHPExcel,$headArr,$title='测试title',$php_eol=['F'],$width=[['F','60']],$keys){
+
         $objPHPExcel->getProperties(); //获取属性
         $objPHPExcel->createSheet();
         $objPHPExcel->setActiveSheetIndex($keys);
@@ -161,6 +162,7 @@ protected function import($filename,$ext = 'xls'){
 
    $excel_data = [];
     foreach ($all_sheets as $v){
+
         $excel_data[$v->getTitle()] = $this->getSheetData($v);
      }
      return $excel_data;
@@ -196,6 +198,7 @@ protected function getSheetData($currentSheet){
             //数据坐标
             $address = $currentColumn . $currentRow;
             //读取到的数据，保存到数组$arr中
+
             $sheet_data[$currentRow][$currentColumn] =$this->getCellValue($currentSheet,$address) ;
         }
     }

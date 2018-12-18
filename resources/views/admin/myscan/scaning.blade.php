@@ -104,7 +104,7 @@
             <ul class="scanning-box-list">
                 <li v-for="data in bagList" :class="['close',currentBag.code==data.code?'active':'']" v-if="screen=='all' || screen==data.state">
                     <i class="batch-open eui-icon-barrage" @click="batchScan(data.code)" title="手动扫描"></i>
-                    <a class="scanning-box" data-layer-title="包裹详情" :data-layer-url="'/myscan/packageDetail?batch_id='+batchData.batchId+'&one_code='+data.code" href="javascript:;"></a>
+                    <a class="scanning-box" data-layer-title="包裹详情" :data-layer-url="'/myscan/packageDetail?batch_id='+batchData.batchId+'&one_code='+data.code+'&batch_source={{$batch_data['batch_source']}}'" href="javascript:;"></a>
                     <label class="info">
                         <p class="name">姓名：<span>@{{data.name}}</span></p>
                         <p class="code">编码：<span>@{{data.code}}</span></p>
@@ -499,8 +499,8 @@
                     if(that.replace.editCode=='') return;
                     $.ajax({
                         type: "get",
-                        url: "/Behind/SendGoods/scanError",
-                        data: {scan_sn:that.currentBag.code, o_fashion_code:that.replace.scanCode,r_fashion_code:that.replace.editCode},
+                        url: "{{route('admin.myscan.index.chang_fashion')}}",
+                        data: {scan_sn:that.currentBag.code, o_fashion_code:that.replace.scanCode,r_fashion_code:that.replace.editCode,type:1},
                         async:false,
                         dataType: "json",
                         success(data){
@@ -809,13 +809,13 @@
 
 
         function printFashionList(one_code) {
-            // alert('模拟打印');
-            var batch_id="{{$batch_data['batch_id']}}";
 
+            var batch_id="{{$batch_data['batch_id']}}";
+            var batch_source = "{{$batch_data['batch_source']}}";
             $.ajax({
                 type: "get",
                 url: "{{route('admin.myscan.index.print_list_scan')}}",
-                data: {batch_id:batch_id, one_code:one_code,type:'fashion_list'},
+                data: {batch_id:batch_id, one_code:one_code,type:'fashion_list',batch_source:batch_source},
                 dataType: "json",
                 async:true,
                 success: function(data){
@@ -853,7 +853,7 @@
             LODOP.SET_PRINT_PAGESIZE(0,1000,data.print_lengh,"A4");
             CreateOnePage(data);
             //});
-            ///LODOP.PREVIEW();
+            //LODOP.PREVIEW();
             LODOP.PRINT();
 
         }
@@ -861,6 +861,7 @@
         function printFashionListS(one_code) {
             var batch_id="{{$batch_data['batch_id']}}";
             var batch_source = "{{$batch_data['batch_source']}}";
+
             $.ajax({
                 type: "get",
                 url: "{{route('admin.myscan.index.print_list_scan')}}",
@@ -885,12 +886,12 @@
             var num=302;
 //console.log(PRO);
             ////////////产品清单
-            if(data.sell_fashions.length){
+            if(data.scan.length){
                 LODOP.ADD_PRINT_TEXT(250,100,100,20,"产品清单");
                 LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                 LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
                 LODOP.ADD_PRINT_TEXT(280,-2,596,20,"***********************************************");
-                $.each(data.sell_fashions,function (key,v) {
+                $.each(data.scan,function (key,v) {
                     LODOP.ADD_PRINT_TEXT(num,2,210,20,v.fashion_name +" X"+v.fashion_num + "      规格 "+v.fashion_size+"\r\n编码:"+v.fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
@@ -915,7 +916,8 @@
                 num=num+52;
 
                 $.each(data.scan_huan,function (key,v) {
-                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v);
+
+                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.o_fashion_code+'  换 '+v.r_fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
                     LODOP.ADD_PRINT_TEXT(num+28,-8,606,20,"*****************************************************");
@@ -936,7 +938,7 @@
                 num=num+52;
 
                 $.each(data.scan_que,function (key,v) {
-                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.name +" X"+v.num + "      规格 "+v.size+"\r\n编码:"+v.code);
+                    LODOP.ADD_PRINT_TEXT(num,2,210,20,v.fashion_name +" X"+v.fashion_num + "      规格 "+v.fashion_size+"\r\n编码:"+v.fashion_code);
                     LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
                     LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
                     LODOP.ADD_PRINT_TEXT(num+28,-8,606,20,"*****************************************************");
@@ -965,7 +967,7 @@
             LODOP.SET_PRINT_MODE("PRINT_NOCOLLATE",1);
 
 
-            LODOP.ADD_PRINT_TEXT(220,38,241,20,data.note);
+            LODOP.ADD_PRINT_TEXT(220,38,241,20,data.batch_note);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",7);
             LODOP.ADD_PRINT_TEXT(77,1,281,25,"哈芙琳—校服专家 高端定制");
@@ -973,7 +975,7 @@
             LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
             LODOP.SET_PRINT_STYLEA(0,"Alignment",2);
             LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-            LODOP.ADD_PRINT_TEXT(118,45,241,24,data.school_name);
+            LODOP.ADD_PRINT_TEXT(118,45,241,24,data.school);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_TEXT(136,1,59,26,"年级：");
@@ -986,10 +988,10 @@
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
 
             //LODOP.SET_PRINT_STYLEA(0,"Bold",1);
-            LODOP.ADD_PRINT_TEXT(136,45,242,20,data.grade_name);
+            LODOP.ADD_PRINT_TEXT(136,45,242,20,data.grade);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
-            LODOP.ADD_PRINT_TEXT(155,45,239,20,data.class_name);
+            LODOP.ADD_PRINT_TEXT(155,45,239,20,data.grade_class);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_TEXT(173,53,233,20,data.name);
@@ -997,7 +999,7 @@
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_TEXT(192,1,67,20,"VIP号：");
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
-            LODOP.ADD_PRINT_TEXT(191,53,229,20,data.vip);
+            LODOP.ADD_PRINT_TEXT(191,53,229,20,data.sell_order_sn);
             LODOP.SET_PRINT_STYLEA(0,"FontName","微软雅黑");
             LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
             LODOP.ADD_PRINT_IMAGE(9,115,51,49,"<img border='0' src='http://halfrin.com/images/hha.jpg' />");
@@ -1049,11 +1051,12 @@
 
         function printKDList(one_code) {
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
+            var con ="{{$send_model}}";
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
-                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list'},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list',con:con,batch_source:batch_source},
                 dataType: "json",
                 success: function(data){
                     console.log(data);
@@ -1129,6 +1132,7 @@
         function que_printKDList(one_code,con) {
             var batch_id="{{$batch_data['batch_id']}}";
             var batch_source = "{{$batch_data['batch_source']}}";
+
             $.ajax({
                 type: "post",
                 url: "{{route('admin.myscan.index.print_list')}}",
@@ -1186,11 +1190,12 @@
         // TODO  预先提取快递单   条形码 值  此函数在扫描包裹码后调用  异步 调用
         function prevKD(one_code) {
             var batch_id="{{$batch_data['batch_id']}}";
-
+            var batch_source = "{{$batch_data['batch_source']}}";
+            var con ="{{$send_model}}";
             $.ajax({
                 type: "get",
                 url: "{{route('admin.myscan.index.prev_k_d')}}",
-                data: {batch_id:batch_id, one_code:one_code,type:'k_d_list'},
+                data: {batch_id:batch_id, one_code:one_code,print_type:'k_d_list',con:con,batch_source:batch_source},
                 dataType: "json",
                 async:true,
                 success: function(data){

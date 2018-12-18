@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
  * @param
  * @return mixed
  */
-class SellStudentModel extends Model
+class SellStudentModel extends BaseModel
 {
     protected $table = 'ts_pc_student_info';
     protected $guarded = [];
