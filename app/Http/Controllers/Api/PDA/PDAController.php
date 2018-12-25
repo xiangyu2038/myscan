@@ -125,7 +125,7 @@ dd($a->toArray());
 //         $data = $this -> heihei($data);
         //$type = 3;
         //////////////////////////////////
-        $type = 4;
+        $type = 1;
 //     $data = [
 //            [
 //                'container'=>'4_S_A01Z01C01',
@@ -172,8 +172,6 @@ dd($a->toArray());
             return response()->json($stock_service -> stockIns($stock_in_model,$data));
 
         }
-
-
     }
 
 
