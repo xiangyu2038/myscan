@@ -1,6 +1,90 @@
 [
   {
     "type": "post",
+    "url": "/api/pda/addMoveList",
+    "title": "新增一个移位单",
+    "version": "1.0.0",
+    "name": "addMoveList",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": "<p>移库单名称</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "operate",
+            "description": "<p>操作者</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>新增一个移位单api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/addMoveList"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "stock_move_sn",
+            "description": "<p>移库单编码</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"stock_move_sn\":\"CKXH_812289859\"}}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "post",
     "url": "/api/pda/addStockIn",
     "title": "新增一个入库单",
     "version": "1.0.0",
@@ -133,6 +217,356 @@
     "groupTitle": "pda模块"
   },
   {
+    "type": "post",
+    "url": "/api/pda/addStockOut",
+    "title": "新增一个出库单",
+    "version": "2.0.0",
+    "name": "addStockOut",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "所有用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": "<p>出库名称</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "type",
+            "description": "<p>出库类型</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "operate",
+            "description": "<p>操作者</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>新增一个出库单api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/addStockOut"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "id",
+            "description": "<p>出库单id</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": "<p>出库名称</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "stock_out_sn",
+            "description": "<p>入库单编码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "operate",
+            "description": "<p>操作人</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "type",
+            "description": "<p>出库类型</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "created_at",
+            "description": "<p>日期</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "created_at.date",
+            "description": "<p>提示信息创建日期</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"stock_out_sn\":\"CKOUT_901034773\",\"name\":\"123\",\"type\":\"789\",\"operate\":\"456\",\"created_at\":\"2019-01-03 14:09:46\",\"id\":5}}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "get",
+    "url": "/api/pda/applyMoveStock",
+    "title": "移位操作",
+    "version": "2.0.0",
+    "name": "applyMoveStock",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "or_stock_sn",
+            "description": "<p>源库位编码</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "ta_stock_sn",
+            "description": "<p>目标库位编码</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "data",
+            "description": "<p>[{&quot;sn&quot;:&quot;CKXH201896c728&quot;,&quot;num&quot;:1},{&quot;sn&quot;:&quot;T1805136A130&quot;,&quot;num&quot;:1}]</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "string",
+            "optional": false,
+            "field": "stock_move_sn",
+            "description": "<p>移位单号</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>移位操作api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/applyMoveStock"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "get",
+    "url": "/api/pda/listNotBindingBox",
+    "title": "列出入库单所有已检针未绑定的箱子号",
+    "version": "1.0.0",
+    "name": "listNotBindingBox",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_in_sn",
+            "description": "<p>入库单id</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>列出入库单所有已检针未绑定的箱子号api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/listNotBindingBox"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"\\u6210\\u529f\",\"data\":{\"1\":\"CKXH1812130002\"}}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "get",
+    "url": "/api/pda/queryStockHas",
+    "title": "库位中所有箱子和产品",
+    "version": "2.0.0",
+    "name": "queryStockHas",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_sn",
+            "description": "<p>库位编码</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>库位中所有箱子和产品api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/queryStockHas"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "box_sn",
+            "description": "<p>箱子编码 或者产品编码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_num",
+            "description": "<p>产品数量</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[{\"box_sn\":\"CKXH1812130001\",\"fashion_num\":6},{\"fashion_num\":5,\"box_sn\":\"07M10008A180\"},{\"fashion_num\":5,\"box_sn\":\"07M10008A180\"}]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
     "type": "get",
     "url": "/api/pda/setEndCheckNeedle",
     "title": "设置针检完成",
@@ -224,147 +658,7 @@
     "groupTitle": "pda模块"
   },
   {
-    "type": "post",
-    "url": "/api/pda/stockCountList",
-    "title": "盘点单列表",
-    "version": "1.0.0",
-    "name": "stockCountList",
-    "group": "group_pda",
-    "permission": [
-      {
-        "name": "所有用户"
-      }
-    ],
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "int",
-            "optional": false,
-            "field": "page",
-            "description": ""
-          }
-        ]
-      }
-    },
-    "description": "<p>盘点单管理api</p>",
-    "sampleRequest": [
-      {
-        "url": "/api/pda/stockCountList"
-      }
-    ],
-    "success": {
-      "fields": {
-        "返回值": [
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "msg",
-            "description": "<p>1 为失败  0为成功</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "current_page",
-            "description": "<p>当前页</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "prev_page_url",
-            "description": "<p>上一页地址</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "next_page_url",
-            "description": "<p>下一页地址</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "total",
-            "description": "<p>总页数</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "id",
-            "description": "<p>盘点单id</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "stock_count_sn",
-            "description": "<p>盘点单编号</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "stock_name",
-            "description": "<p>盘点仓库</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "title",
-            "description": "<p>标题</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "operate",
-            "description": "<p>操作人</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "status",
-            "description": "<p>状态</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "created_at",
-            "description": "<p>盘点日期</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "成功示例:",
-          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"current_page\":1,\"prev_page_url\":null,\"next_page_url\":\"http:\\/\\/myscan.dev.com\\/api\\/pda\\/choiceStockCount?page=2\",\"total\":5,\"data\":[{\"id\":1,\"stock_count_sn\":\"123\",\"stock_name\":\"1\",\"title\":\"\\u7b2c\\u4e00\\u6b21\\u76d8\\u70b9\",\"operate\":\"\\u9648\\u7fd4\\u5b87\",\"status\":\"\\u672a\\u542f\\u52a8\",\"created_at\":{\"date\":\"2018-12-03 17:47:27.000000\",\"timezone_type\":3,\"timezone\":\"PRC\"}}]}}",
-          "type": "json"
-        }
-      ]
-    },
-    "error": {
-      "examples": [
-        {
-          "title": "(json) 错误示例:",
-          "content": "{\"code\":\"1\",\"api_msg\":\"失败\",\"data\":[]}",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "app/Http/Controllers/Api/PDA/PDAController - 副本.php",
-    "groupTitle": "pda模块"
-  },
-  {
-    "type": "post",
+    "type": "get",
     "url": "/api/pda/stockCountList",
     "title": "盘点单列表",
     "version": "1.0.0",
@@ -644,7 +938,196 @@
     "groupTitle": "pda模块"
   },
   {
+    "type": "post",
+    "url": "/api/pda/stockOut",
+    "title": "出库动作",
+    "version": "2.0.0",
+    "name": "stockOut",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_out_id",
+            "description": "<p>出库单id</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "data",
+            "description": "<p>出库单数据</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>出库动作api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/stockOut"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[{\"container\":\"4_S_A01Z01C01\",\"element\":{\"fashion_info\":[{\"fashion_code\":\"T1806090A\",\"fashion_size\":\"120\",\"fashion_num\":1}],\"box_info\":[]}}]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
     "type": "get",
+    "url": "/api/pda/stockOutList",
+    "title": "出库单列表",
+    "version": "2.0.0",
+    "name": "stockOutList",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "所有用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "page",
+            "description": "<p>页数</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "type",
+            "description": "<p>出库类型</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>出库单列表api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/stockOutList"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "id",
+            "description": "<p>出库单id</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "name",
+            "description": "<p>出库名称</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "stock_out_sn",
+            "description": "<p>入库单编码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "operate",
+            "description": "<p>操作人</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "type",
+            "description": "<p>出库类型</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "created_at",
+            "description": "<p>日期</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "created_at.date",
+            "description": "<p>提示信息创建日期</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"current_page\":1,\"prev_page_url\":null,\"next_page_url\":\"http:\\/\\/myscan.dev.com\\/api\\/pda\\/stockInList?page=2\",\"total\":11,\"data\":[{\"id\":1,\"stock_in_sn\":\"123\",\"name\":\"\\u7b2c\\u4e00\\u6b21\\u5165\\u5e93\",\"type\":\"\\u9000\\u8d27\\u5165\\u5e93\",\"operate\":\"\\u9648\\u7fd4\\u5b87\",\"j_h_time\":null,\"z_j_is_end\":\"\\u5b8c\\u6210\",\"b_x_is_end\":\"\\u5b8c\\u6210\",\"j_z_box_num\":8,\"r_k_box_num\":0,\"wait_ban_box_num\":8}]}}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "post",
     "url": "/api/pda/submitAudit",
     "title": "提交审核",
     "version": "1.0.0",
@@ -731,7 +1214,7 @@
       "examples": [
         {
           "title": "成功示例:",
-          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"id\":1,\"stock_in_sn\":\"123\",\"stock_sn_s\":[\"4-SA01Z01C01\",\"4SA01Z01C02\"],\"has_box_num\":8,\"detail\":[{\"stock_sn\":\"4-SA01Z01C01\",\"stock_box\":[]},{\"stock_sn\":\"4SA01Z01C02\",\"stock_box\":[]}]}}",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":{\"id\":1,\"stock_in_sn\":\"in_812157766\",\"stock_sn_s\":[\"4_S_A01Z01C01\",\"4_S_A01Z01C01\",\"4_S_A01Z01C01\",\"4_S_A01Z01C01\",\"4_S_A01Z01C01\"],\"has_box_num\":9,\"detail\":[{\"stock_sn\":\"4_S_A01Z01C01\",\"box_sn\":[\"CKXH1802251111\",\"CKXH1802251111\"]},{\"stock_sn\":\"4_S_A01Z01C01\",\"box_sn\":[\"CKXH1802251111\",\"CKXH1802251111\"]},{\"stock_sn\":\"4_S_A01Z01C01\",\"box_sn\":[\"CKXH1802251111\",\"CKXH1802251111\"]},{\"stock_sn\":\"4_S_A01Z01C01\",\"box_sn\":[\"CKXH1802251111\",\"CKXH1802251111\"]},{\"stock_sn\":\"4_S_A01Z01C01\",\"box_sn\":[\"CKXH1802251111\",\"CKXH1802251111\"]}]}}",
           "type": "json"
         }
       ]
@@ -858,118 +1341,6 @@
       ]
     },
     "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
-    "groupTitle": "pda模块"
-  },
-  {
-    "type": "post",
-    "url": "/api/pda/submitScan",
-    "title": "盘点数据提交",
-    "version": "1.0.0",
-    "name": "submitScan",
-    "group": "group_pda",
-    "permission": [
-      {
-        "name": "所有用户"
-      }
-    ],
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": false,
-            "field": "type",
-            "description": "<p>类型 1代表盘点 2代表出库</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": false,
-            "field": "stock_count_id",
-            "description": "<p>若为类型1  必须提供盘点单的id</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": false,
-            "field": "container",
-            "description": "<p>编码  编码有两种</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "string",
-            "optional": false,
-            "field": "element",
-            "description": "<p>扫描的编码</p>"
-          }
-        ]
-      }
-    },
-    "description": "<p>提交扫描数据api</p>",
-    "sampleRequest": [
-      {
-        "url": "/api/pda/submitScan"
-      }
-    ],
-    "success": {
-      "fields": {
-        "返回值": [
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "container",
-            "description": "<p>库位或者箱子编码</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "element",
-            "description": "<p>扫描的编码</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "element.fashion_code",
-            "description": "<p>扫描的编码</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "element.fashion_size",
-            "description": "<p>扫描的尺码</p>"
-          },
-          {
-            "group": "返回值",
-            "type": "string",
-            "optional": false,
-            "field": "element.fashion_num",
-            "description": "<p>扫描的数量</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "成功示例:",
-          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[{\"container\":\"daddafffdsfsd\",\"element\":[{\"fashion_code\":\"07M10008A\",\"fashion_size\":\"180\",\"fashion_num\":2}]},{\"container\":\"daddafffdsfsd\",\"element\":[{\"fashion_code\":\"07M10008A\",\"fashion_size\":\"180\",\"fashion_num\":1}]}]}",
-          "type": "json"
-        }
-      ]
-    },
-    "error": {
-      "examples": [
-        {
-          "title": "(json) 错误示例:",
-          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "app/Http/Controllers/Api/PDA/PDAController - 副本.php",
     "groupTitle": "pda模块"
   },
   {
@@ -1168,6 +1539,104 @@
         {
           "title": "(json) 错误示例:",
           "content": "{\"code\":\"1\",\"api_msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/Storage/StockController.php",
+    "groupTitle": "仓储管理模块"
+  },
+  {
+    "type": "get",
+    "url": "/api/alertStockCountFashionNum",
+    "title": "修改盘点单产品数量",
+    "version": "2.0.0",
+    "name": "alertStockCountFashionNum",
+    "group": "group_so",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_count_sn",
+            "description": "<p>盘点编码</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_id",
+            "description": "<p>库位id</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "fashion_code",
+            "description": "<p>产品编码</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "fashion_size",
+            "description": "<p>产品尺码</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "fashion_num",
+            "description": "<p>产品数量</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>修改盘点单产品数量api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/alertStockCountFashionNum"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"state\":1,\"msg\":\"本库位编码未盘点本库位\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"state\":\"1\",\"msg\":\"失败\",\"data\":[]}",
           "type": "json"
         }
       ]

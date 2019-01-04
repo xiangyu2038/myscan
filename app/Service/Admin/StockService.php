@@ -7,6 +7,7 @@ use App\Models\Admin\FashionModel;
 use App\Models\Admin\StockBoxModel;
 use App\Models\Admin\StockDetailModel;
 use App\Models\Admin\StockModel;
+use App\Models\Admin\StockMoveDetailModel;
 use App\Models\Admin\StockOutModel;
 use App\Models\Admin\StockScanBoxDetailModel;
 use App\Models\Admin\StockScanBoxModel;
@@ -20,10 +21,11 @@ class StockService
      * @param
      * @param
      * @param
+     * @param
      * @return mixed
      */
-    public function addRecord($op_model,$data,$type){
-        $this -> type = $type;////操作的类型
+    public function addRecord($op_model,$data,$type,$my_type=null){
+        $this -> type = $type;////操作的类型细分类型
         $this -> op_model = $op_model;///操作的单据模型
         foreach ($data as $v){
             /////对扫描的一个单位添加记录
@@ -39,7 +41,7 @@ class StockService
 
             if($type == '检针'){
                 $this -> stockIn($v);///入库动作
-            }elseif($type == '出库'){
+            }elseif($my_type == '出库'){
                 $this->stockOut($v);///出库动作
             }elseif($type == '盘点'||$type == '入库'){
 
@@ -482,15 +484,17 @@ public function stockCount($stock_count_model,$data){
 /**
  * 处理出库
  * @param
+ * @param
  * @return mixed
  */
-public function stockOuts($data){
+public function stockOuts($data,$stock_out_model=null){
     $stock_out = ObjectHelper::getInstance(StockOutModel::class);
     \DB::beginTransaction();
     try{
-        $stock_out_model = $stock_out -> add($data);///生成一个出库单
-
-         $this -> addRecord($stock_out_model,$data,'出库');
+        if(!$stock_out_model){
+            $stock_out_model = $stock_out -> add($data);///生成一个出库单
+        }
+        $this -> addRecord($stock_out_model,$data,$stock_out_model->type,'出库');
         \DB::commit();
         return msg(0,'ok',$this -> formatScanData($data));
     }catch (\Exception $e){
@@ -499,6 +503,100 @@ public function stockOuts($data){
     }
 }
 
+/**
+ * 移位操作 移动位置操作 把若干产品 从一个库位移动到另外一个库位
+ * @param 源库位
+ * @param 目标库位
+ * @param 移动的产品
+ * @param 移位单号
+ * @return mixed
+ */
+public function applyMoveStock($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn){
+    \DB::beginTransaction();
+    try{
+////首先对移位的数据进行分析
+$parse_data = $this -> parseMoveData($data);
+////首先扣除原本库位的库存
+
+
+        $or_stock_model = StockModel::where('stock_sn',$or_stock_sn)->first();///初始库位模型
+        $ta_stock_model = StockModel::where('stock_sn',$ta_stock_sn)->first();//目标库位模型
+        $this -> takeOffStock($or_stock_model,$parse_data);///原始库位扣除
+        $this -> addStock($ta_stock_model,$parse_data);///目标库位增加
+
+        ////开启移位记录功能
+         $this -> addStockMoveRecord($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);///记录移位日志
+
+       // \DB::commit();
+        return msg(0,'ok');
+    }catch (\Exception $e){
+        return  msg(1,$e->getMessage());
+    }
+}
+
+/**
+ * 分析移位提交的数据
+ * @param
+ * @return mixed
+ */
+public function parseMoveData($data){
+    $box_info = [];
+    $fashion_info = [];
+    foreach ($data as $v){
+        $type = $this ->judgeCode($v['sn']);
+        if($type == 2){
+            $box_info[] = $v['sn'];
+        }elseif($type == 3){
+            $v = ObjectHelper::getInstance(FashionModel::class)->fashionCode($v['sn'],$v['num']);
+            $fashion_info[] = $v;
+        }
+    }
+
+    return compact('fashion_info','box_info');
+}
+
+/**
+ * 扣除一个库位里的产品或者箱子
+ * @param
+ * @param
+ * @return mixed
+ */
+public function takeOffStock($stock_model,$data){
+   foreach ($data['fashion_info'] as $fashion){
+       $stock_model -> outFashion($fashion);///去出库
+   }
+
+    foreach ($data['box_info'] as $fashion){
+        $stock_model -> outBox($fashion);///去出库
+    }
+
+
+}
+
+/**
+ * 目位增加库存
+ * @param 
+ * @return mixed
+ */
+public function addStock($stock_model,$data){
+      foreach ($data['fashion_info'] as $fashion){
+          $stock_model -> inFashion($fashion);
+      }
+    foreach ($data['box_info'] as $fashion){
+        $stock_model -> inBox($fashion);///去出库
+    }
+    return ;
+}
+/**
+ * 记录移位日志
+ * @param
+ * @return mixed
+ */
+public function addStockMoveRecord($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn){
+    $build =   StockMoveDetailModel::build($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);
+    StockMoveDetailModel::create($build);
+
+}
 }
 
 

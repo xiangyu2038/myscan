@@ -15,7 +15,7 @@
 //    return view('welcome');
 //});
 Route::get('tests', function () {
-
+dd(__LINE__);
 $batch_model = \App\Models\Admin\SellBatchModel::find(2);
     \App\Models\Admin\SellBatchModel::queData($batch_model);
 

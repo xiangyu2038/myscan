@@ -11,9 +11,13 @@ class BoxModel extends BaseModel
 //    public $timestamps = false;
     protected $guarded = [];
 
+    protected $belong_to_stock=null;///所有绑定库位的箱子
+
     public function boxDetail(){
         return $this -> hasMany('App\Models\Admin\BoxDetailModel','box_id');
     }
+
+
 
     /**
      * 查询本箱子某个产品的库存
@@ -153,7 +157,36 @@ class BoxModel extends BaseModel
 
         return $this -> belongsTo('App\Models\Admin\StockBoxModel','box_sn','box_sn');
     }
+    public function getFashionNum(){
+       $temp_num = 0;
+        foreach ($this -> boxDetail as $v){
+           $temp_num = $temp_num +$v -> fashion_num;
+       }
+      return $temp_num;
+    }
 
+    /**
+     * 所有绑定库位的箱子
+     * @param
+     * @return mixed
+     */
+    public function  belongToStock(){
 
+        if(!$this->belong_to_stock){
+            $all_box_sn = StockBoxModel::all()->pluck('id')->toArray();
+           return  array_unique($all_box_sn);
+        }
+       return  $this->belong_to_stock;
+
+    }
+
+/**
+ * 所属的库位
+ * @param
+ * @return mixed
+ */
+    public function getStockSn(){
+        return $this -> stockBox -> stock_sn;
+    }
 
 }

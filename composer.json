@@ -5,11 +5,14 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.0.0",
+        "php": "^7.1",
         "barryvdh/laravel-ide-helper": "^2.4",
         "fideloper/proxy": "~3.3",
         "laravel/framework": "5.5.*",
-        "laravel/tinker": "~1.0"
+        "laravel/tinker": "~1.0",
+        "xiangyu2038/excel": "^3.0",
+        "xiangyu2038/wish": "^3.0",
+        "xiangyu2038/withxy": "^5.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.1",

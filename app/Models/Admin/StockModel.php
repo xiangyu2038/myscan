@@ -4,6 +4,7 @@ namespace App\Models\Admin;
 
 use App\Helper\ObjectHelper;
 use Illuminate\Database\Eloquent\Model;
+use XiangYu2038\Wish\XY;
 
 class StockModel extends BaseModel
 {
@@ -87,10 +88,11 @@ class StockModel extends BaseModel
 /**
  * in  入库产品
  * @param
+ * @param
  * @return mixed
  */
 
-public function inFashion($fashion,$type){
+public function inFashion($fashion,$type='入库'){
      $fashion_stock = $this -> queryFashionStock($fashion);
 
     if($fashion_stock === false){
@@ -148,7 +150,7 @@ public function queryFashionStock($fashion_info){
  * @param
  * @return mixed
  */
-public function inBox($box,$type){
+public function inBox($box,$type='出库'){
    $stock_box_build = ObjectHelper::getInstance(StockBoxModel::class)->build($this->id,$box);
 
      if($type == '盘点'){
@@ -171,7 +173,7 @@ public function inBox($box,$type){
  * @return mixed
  */
 public function outFashion($fashion){
-    $fashion_stock = $this -> queryFashionStock($fashion);
+   $fashion_stock = $this -> queryFashionStock($fashion);
 
     if($fashion_stock === false){
         $fashion['stock_id'] = $this->id;
@@ -184,6 +186,7 @@ public function outFashion($fashion){
     }
 
     $fashion_num = $fashion_stock->fashion_num - $fashion['fashion_num'];//为出库
+
     $res = $fashion_stock->update(['fashion_num'=>$fashion_num]);
     if(!$res){
         throw new \Exception('更新库存失败');
@@ -197,7 +200,7 @@ public function outFashion($fashion){
      * @return mixed
      */
     public function outBox($boxs){
-        $res = StockBoxModel::where('stock_id',$this->id)->where('box_sn',$boxs)->first();
+      $res = StockBoxModel::where('stock_id',$this->id)->where('box_sn',$boxs)->first();
        if(!$res){
            throw new \Exception('本库位没有此箱号');
        }
@@ -216,6 +219,44 @@ public function clear(){
 }
     public function getBoxSnAttribute(){
         return pick_up(this($this->stockBox,['box_sn']),'box_sn');
+    }
+
+    /**
+     * 一个库位拥有的箱子以及箱子的详情
+     * @param
+     * @return mixed
+     */
+    public function hasBoxWithFashionDetail(){
+
+        $box_info = XY::with($this -> stockBox) -> delete('box')->except('stock_id','id')->wish('boxDetail')->except('box_id')->get();
+
+        return $box_info;
+
+    }
+
+    /**
+     * 一个库位拥有的箱子以及箱子下面的产品数量
+     * @param
+     * @return mixed
+     */
+    public function hasBoxWithFashionNum(){
+
+        $box_info = XY::with($this -> stockBox)->add('fashion_num')->delete('box',true)->except('stock_id')->wish('box')->add('fashion_num')->get();
+
+        return $box_info;
+    }
+
+    /**
+     * 一个库位拥有的产品及其详情
+     * @param
+     * @return mixed
+     */
+    public function hasFashion(){
+        //箱号加产品条形码
+
+
+      $fashion_info =  XY::with($this -> stockDetails)->add('box_sn')->except('stock_id','fashion_code','fashion_size')->get();
+    return $fashion_info;
     }
 
 

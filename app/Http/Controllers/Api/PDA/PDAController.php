@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\PDA;
 
 use App\Helper\ObjectHelper;
-use App\Helper\XY;
 use App\Models\Admin\StockBoxModel;
 use App\Models\Admin\StockCountDetailModel;
 use App\Models\Admin\StockCountModel;
 use App\Models\Admin\StockInModel;
 use App\Models\Admin\StockModel;
 use App\Models\Admin\StockOutModel;
+use App\Models\Admin\StockScanBoxModel;
 use App\Models\Admin\TestModel;
 use App\Service\Admin\StockService;
 use http\Exception;
@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\Debug\Exception\FatalErrorException;
 use Illuminate\Routing\Controller as BaseController;
 use App\Http\Controllers\Api\Controller;
+use XiangYu2038\Wish\XY;
+
 class PDAController extends Controller
 {
     /**
@@ -26,22 +28,17 @@ class PDAController extends Controller
      */
 
     public function test(){
-       $a = ['stockDetails'=>['id','stock_id','fashion_code','fashion'=>[function($query){
+      $a = ['stockDetails'=>['id','stock_id','fashion_code','fashion'=>[function($query){
            $query ->select('id','code');
        }]],'stockBox'=>['id','stock_id','box_sn']];
 
         $a = StockModel::withxy(['stockDetails'=>['id','stock_id','fashion_code']])->get(['id','stock_sn']);
 
-        dd(__LINE__);
+
         $a = XY::with($a)->wish('stock_details')->add('fashion_code')->get();
+dd(__LINE__);
 
 
-        //XY::with($a)->wish('stockDetails')->add('heihei')->get();
-dd($a->toArray());
-
-      dd(__LINE__);
-        dd($a->toArray());
-       dd(__LINE__);
 
 
     }
@@ -120,34 +117,35 @@ dd($a->toArray());
     public function submitScan(Request $request){
 
         /////////////////////////////////
-//         $type =  $_POST['type'];
-//         $data =  $_POST['data'];
-//         $data = $this -> heihei($data);
-        //$type = 3;
+         $type =  $request -> post('type');
+         $data =  $request -> post('data');
+         $data = $this -> heihei($data);
+
         //////////////////////////////////
-        $type = 1;
+
 //     $data = [
 //            [
 //                'container'=>'4_S_A01Z01C01',
-//                'element'=>['07M10008A180','07M10008A180','07M10008A190','CKXH201896c728']
+//                'element'=>['07M10008A180','07M10008A180','07M10008A190','07M10008A190']
 //            ],
 //            [
 //                'container'=>'CKXH1812130001',
 //                'element'=>['07M10008A180','07M10008A180','07M10008A180']
 //            ]
 //        ];
-//
-        $data = [
-            [
-                'container'=>'4_S_A01Z01C01',
-                'element'=>['07M10008A180']
-            ]
-        ];
+
+//        $data = [
+//            [
+//                'container'=>'CKXH201896c728',
+//                'element'=>['M1710009A','M1710009A']
+//            ]
+//        ];
+
         $stock_service = ObjectHelper::getInstance(StockService::class);
         if($type == 1){
             /////这是盘点动作
-            //$stock_count_id = $_POST['id'];
-            $stock_count_id =1;
+            $stock_count_id = $request -> post('id');
+          //  $stock_count_id =1;
             $stock_count_model = StockCountModel::find($stock_count_id);
 
             return response()->json($stock_service -> stockCount($stock_count_model,$data));
@@ -157,16 +155,17 @@ dd($a->toArray());
 
         }elseif($type==3){
              ////这是检针动作
-            //$stock_in_id = $_POST['id'];///入库单的id
-            $stock_in_id = 2;
+            $stock_in_id = $request -> post('id');///入库单的id
+
+          //  $stock_in_id = 4;
             $stock_in_model = StockInModel::find($stock_in_id);
             $stock_service =  ObjectHelper::getInstance(StockService::class);
             return response()->json( $stock_service -> checkNeedle($stock_in_model,$data));
 
         }elseif($type == 4){
             ////这是入库动作
-             //$stock_in_id = $_POST['id'];///入库单的id
-            $stock_in_id =1;
+             $stock_in_id = $request -> post('id');///入库单的id
+            //$stock_in_id =1;
             $stock_in_model = StockInModel::find($stock_in_id);
 
             return response()->json($stock_service -> stockIns($stock_in_model,$data));
@@ -217,7 +216,7 @@ dd($a->toArray());
      */
     public function addStockIn(){
         ////新增一个入库单
-        $name = $_POST['name'];
+       $name = $_POST['name'];
         $operate = $_POST['operate'];
         $j_h_time = $_POST['j_h_time'];
         $type = $_POST['type'];
@@ -272,6 +271,10 @@ dd($a->toArray());
 
         $type = $request -> get('type');
         $heihei_type = $request -> get('heihei_type');
+////////
+//        $type = '大货入库';
+//        $heihei_type = '检针';
+////////
 
         //TestModel::create(['json'=>json_encode($_GET)]);
         $stock_in_model = StockInModel::with('stockScanBox','stockScanBoxDetail')->where(function($query)use($type,$heihei_type){
@@ -294,6 +297,96 @@ dd($a->toArray());
         return response()->json(msg(0,'ok',paginate($stock_in_model,$stock_in_list)));
     }
 
+    /**
+     * @api {post} /api/pda/addStockOut 新增一个出库单
+     * @apiVersion 2.0.0
+     * @apiName addStockOut
+     * @apiGroup group_pda
+     * @apiPermission 所有用户
+     *
+     * @apiParam {string} name 出库名称
+     * @apiParam {string} type 出库类型
+     * @apiParam {string} operate 操作者
+     * @apiDescription 新增一个出库单api
+     *
+     * @apiSampleRequest  /api/pda/addStockOut
+     *
+     * @apiSuccess (返回值) {int} id 出库单id
+     * @apiSuccess (返回值) {string} name 出库名称
+     * @apiSuccess (返回值) {string} stock_out_sn 入库单编码
+     * @apiSuccess (返回值) {string} operate 操作人
+     * @apiSuccess (返回值) {string} type 出库类型
+     * @apiSuccess (返回值) {string} created_at 日期
+     * @apiSuccess (返回值) {string} created_at.date 提示信息创建日期
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":{"stock_out_sn":"CKOUT_901034773","name":"123","type":"789","operate":"456","created_at":"2019-01-03 14:09:46","id":5}}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function addStockOut(Request $request){
+        ////新增一个入库单
+
+        $name = $request -> post('name');
+        $operate = $request -> post('operate');
+        $type = $request -> post('type');
+
+//        $name = '123';
+//       $operate = '456';
+//
+//        $type = '789';
+
+        $stock_in_res = ObjectHelper::getInstance(StockOutModel::class)->add($name,$operate,$type);
+        $stock_in_res =  XY::with($stock_in_res)->except('updated_at')->get();
+
+        if($stock_in_res){
+            return response()->json(msg(0,'ok',$stock_in_res));
+        }
+        return response()->json(msg(1,'新增入库单失败'));
+
+
+    }
+
+    /**
+     * @api {get} /api/pda/stockOutList 出库单列表
+     * @apiVersion 2.0.0
+     * @apiName stockOutList
+     * @apiGroup group_pda
+     * @apiPermission 所有用户
+     *
+     * @apiParam {int} page 页数
+     * @apiParam {int} type 出库类型
+     * @apiDescription 出库单列表api
+     *
+     * @apiSampleRequest  /api/pda/stockOutList
+     *
+     * @apiSuccess (返回值) {int} id 出库单id
+     * @apiSuccess (返回值) {string} name 出库名称
+     * @apiSuccess (返回值) {string} stock_out_sn 入库单编码
+     * @apiSuccess (返回值) {string} operate 操作人
+     * @apiSuccess (返回值) {string} type 出库类型
+     * @apiSuccess (返回值) {string} created_at 日期
+     * @apiSuccess (返回值) {string} created_at.date 提示信息创建日期
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":{"current_page":1,"prev_page_url":null,"next_page_url":"http:\/\/myscan.dev.com\/api\/pda\/stockInList?page=2","total":11,"data":[{"id":1,"stock_in_sn":"123","name":"\u7b2c\u4e00\u6b21\u5165\u5e93","type":"\u9000\u8d27\u5165\u5e93","operate":"\u9648\u7fd4\u5b87","j_h_time":null,"z_j_is_end":"\u5b8c\u6210","b_x_is_end":"\u5b8c\u6210","j_z_box_num":8,"r_k_box_num":0,"wait_ban_box_num":8}]}}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public  function stockOutList(Request $request){
+        /////出库单列表
+
+        $type = $request -> get('type');
+        $stock_out_model =  StockOutModel::where(function (){
+
+        })->paginate(15);
+
+        $stock_out_res = XY::with($stock_out_model)->except('updated_at')->get();
+
+        return response()->json(msg(0,'ok',$stock_out_res));
+    }
 
     /**
      * @api {get} /api/pda/setEndCheckNeedle 设置针检完成
@@ -383,7 +476,227 @@ dd($a->toArray());
         return response()->json(msg(0,'ok',$stock_in_detail));
     }
 
+    /**
+     * @api {get} /api/pda/listNotBindingBox 列出入库单所有已检针未绑定的箱子号
+     * @apiVersion 1.0.0
+     * @apiName listNotBindingBox
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} stock_in_sn 入库单id
+     * @apiDescription 列出入库单所有已检针未绑定的箱子号api
+     *
+     * @apiSampleRequest  /api/pda/listNotBindingBox
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"\u6210\u529f","data":{"1":"CKXH1812130002"}}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
 
+    public function listNotBindingBox(Request $request){
+        //////列出本次没有绑定的箱子
+        $stock_in_sn = $request -> get('stock_in_sn');
+
+        $stock_scan_box_model = StockScanBoxModel::where('op_sn',$stock_in_sn)->withxy(['box'=>['id','box_sn']])->get(['op_sn','box_id','stock_scan_stock_id']);
+        $temp_j_z = [];//检针的模型
+        $temp_b_d = [];///搬箱的模型
+        foreach ($stock_scan_box_model as $v){
+            if($v->stock_scan_stock_id == 0){
+                $temp_j_z[] = $v;
+            }else{
+                $temp_b_d[] = $v;
+            }
+        }
+        $stock_in_model = ObjectHelper::getInstance(StockInModel::class);
+
+        $w_z = $stock_in_model -> wZSn($temp_j_z,$temp_b_d);
+
+        return response()->json(msg(0,'成功',$w_z));
+
+
+    }
+
+
+    /**
+     * @api {post} /api/pda/addMoveList 新增一个移位单
+     * @apiVersion 1.0.0
+     * @apiName addMoveList
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {string} name 移库单名称
+     * @apiParam {string} operate  操作者
+     * @apiDescription 新增一个移位单api
+     *
+     * @apiSampleRequest  /api/pda/addMoveList
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     * @apiSuccess (返回值) {string} stock_move_sn 移库单编码
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":{"stock_move_sn":"CKXH_812289859"}}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function addMoveList(Request $request){
+        ///新增一个移位单
+        $name = $request -> post('name');
+        $operate = $request -> post('operate');
+
+        ///
+        $name = '第'.rand(0,10000).'次移位';
+        $operate = '陈翔宇'.rand(0,10000).'号';
+        ////
+        $stock_move = ObjectHelper::getInstance(StockMoveModel::class);
+        $stock_move_build = $stock_move->build($name,$operate);
+        $res = $stock_move -> create($stock_move_build);
+        if(!$res){
+            return response()->json(msg(1,'保存移库单失败'));
+        }
+
+        $res =  XY::with($res)->only('stock_move_sn')->get();
+        return response()->json(msg(0,'ok',$res));
+
+    }
+
+    /**
+     * @api {get} /api/pda/queryStockHas 库位中所有箱子和产品
+     * @apiVersion 2.0.0
+     * @apiName queryStockHas
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} stock_sn  库位编码
+     * @apiDescription 库位中所有箱子和产品api
+     *
+     * @apiSampleRequest  /api/pda/queryStockHas
+     *
+     * @apiSuccess (返回值) {int}  box_sn 箱子编码 或者产品编码
+     * @apiSuccess (返回值) {string} fashion_num 产品数量
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":[{"box_sn":"CKXH1812130001","fashion_num":6},{"fashion_num":5,"box_sn":"07M10008A180"},{"fashion_num":5,"box_sn":"07M10008A180"}]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function queryStockHas(Request $request){
+        ////查询一个库位里面有啥 有箱子 有产品
+        $stock_sn = $request -> get('stock_sn');
+        /////
+        //$stock_sn = '4_S_A01Z01C01';
+        ///////
+
+        $stock_model = StockModel::where('stock_sn',$stock_sn)->withxy(['stockDetails'=>['stock_id','fashion_code','fashion_num','fashion_size'],'stockBox'=>['stock_id','box_sn','box'=>['id','box_sn','boxDetail'=>['box_id','fashion_code','fashion_size','fashion_num']]]])->first(['id','stock_sn']);
+
+
+        $has_box =  $stock_model -> hasBoxWithFashionNum()->toArray();///拥有的箱子
+
+        $has_fashion = $stock_model -> hasFashion()->toArray();//拥有的产品
+
+        $all =  array_merge($has_box,$has_fashion);
+
+        return response()->json(msg(0,'ok',$all));
+    }
+
+
+    /**
+     * @api {get} /api/pda/applyMoveStock 移位操作
+     * @apiVersion 2.0.0
+     * @apiName applyMoveStock
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} or_stock_sn 源库位编码
+     * @apiParam {int} ta_stock_sn 目标库位编码
+     * @apiParam {int} data [{"sn":"CKXH201896c728","num":1},{"sn":"T1805136A130","num":1}]
+     * @apiParam {string} stock_move_sn 移位单号
+     * @apiDescription 移位操作api
+     *
+     * @apiSampleRequest  /api/pda/applyMoveStock
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":[]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function applyMoveStock(){
+        ////进行移位操作
+        $or_stock_sn = '4_S_A01Z01C01';///源库位编码
+        $ta_stock_sn = '4_S_A01Z01C02';///目标库位编码
+        $stock_move_sn = 'CKXH_812289859';///移位单
+        $data =  [
+             ['sn'=>'CKXH201896c728','fashion_num'=>1],
+             ['sn'=>'T1805136A130','fashion_num'=>1],
+
+        ];
+
+        $stock_service = ObjectHelper::getInstance(StockService::class);
+        $res =  $stock_service -> applyMoveStock($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);
+
+        return response()->json($res);
+
+    }
+
+
+    /**
+     * @api {post} /api/pda/stockOut 出库动作
+     * @apiVersion 2.0.0
+     * @apiName stockOut
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} stock_out_id 出库单id
+     * @apiParam {int} data 出库单数据
+     * @apiDescription 出库动作api
+     *
+     * @apiSampleRequest  /api/pda/stockOut
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":[{"container":"4_S_A01Z01C01","element":{"fashion_info":[{"fashion_code":"T1806090A","fashion_size":"120","fashion_num":1}],"box_info":[]}}]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function stockOut(Request $request){
+        ////出库动作
+        /////这是出库动作  首先记录出库记录
+
+        $stock_out_id = $request -> post('stock_out_id');
+        $data =  $request->post('data');
+        $data = $this -> heihei($data);
+
+
+//        $data = [
+//            [
+//                'container'=>'4_S_A01Z01C01',
+//                'element'=>['T1806090A120']
+//            ]
+//        ];
+//        $stock_out_id = 6;
+        $stock_out_model = StockOutModel::find($stock_out_id);
+         if(!$stock_out_model){
+             return response()->json(msg(1,'不存在的出库单'));
+         }
+
+        $stock_service  = ObjectHelper::getInstance(StockService::class);
+
+        return response()->json($stock_service -> stockOuts($data,$stock_out_model));
+    }
 
 }
 

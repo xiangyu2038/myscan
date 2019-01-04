@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Api\Storage;
 
+use App\Helper\ExcelHelper;
 use App\Helper\ObjectHelper;
 use App\Http\Controllers\Api\Controller;
 use App\Models\Admin\BoxDetailModel;
 use App\Models\Admin\BoxModel;
 use App\Models\Admin\FashionModel;
 use App\Models\Admin\StockBoxModel;
-use App\Models\Admin\StockCountDetailModel;
+
 use App\Models\Admin\StockCountModel;
-use App\Models\Admin\StockInDetailModel;
+use App\Models\Admin\StockDetailModel;
+
 use App\Models\Admin\StockInModel;
 use App\Models\Admin\StockModel;
-use App\Models\Admin\StockOutDetailModel;
+use App\Models\Admin\StockMoveModel;
+
 use App\Models\Admin\StockOutModel;
 use App\Models\Admin\StockScanBoxDetailModel;
 use App\Models\Admin\StockScanBoxModel;
@@ -21,6 +24,9 @@ use App\Models\Admin\StockScanStockDetailModel;
 use App\Models\Admin\StockScanStockModel;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
+use XiangYu2038\Wish\XY;
+use XiangYu2038\Excel\Excel;
+
 
 
 class StockController extends Controller
@@ -905,5 +911,197 @@ public function searchCon($request){
     $type = $request ->get('type');
     return compact('key_word','type');
 }
+
+    /**
+     * @api {get} /api/alertStockCountFashionNum 修改盘点单产品数量
+     * @apiVersion 2.0.0
+     * @apiName alertStockCountFashionNum
+     * @apiGroup group_so
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} stock_count_sn 盘点编码
+     * @apiParam {int} stock_id 库位id
+     * @apiParam {int} fashion_code 产品编码
+     * @apiParam {int} fashion_size 产品尺码
+     * @apiParam {int} fashion_num 产品数量
+     * @apiDescription 修改盘点单产品数量api
+     *
+     * @apiSampleRequest  /api/alertStockCountFashionNum
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"state":1,"msg":"本库位编码未盘点本库位","data":[]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"state":"1","msg":"失败","data":[]}
+     */
+
+public function alertStockCountFashionNum(Request $request){
+    /////修改盘点单里某个库位的产品数量
+    $stock_count_sn = $request -> get('stock_count_sn');
+    $stock_sn = $request ->get('stock_sn');
+    $fashion_code = $request ->get('fashion_code');
+    $fashion_size = $request ->get('fashion_size');
+    $fashion_num = $request ->get('fashion_num');
+
+
+
+    /////////////////
+//    $stock_count_sn = 'pd_812151376';
+//
+//    $stock_sn = '4_S_A01Z01C01';
+//    $fashion_code = '07M10008A';
+//    $fashion_size = 180;
+//    $fashion_num = 5;
+    /// //////////////
+    $stock_model = StockModel::where('stock_sn',$stock_sn)->first();
+
+    if(!$stock_model){
+        return response()->json(api_msg(1,'不存在本库位'));
+    }
+    //////首先修改一下盘点记录
+        $stock_scan_stock_model = StockScanStockModel::where('op_sn',$stock_count_sn)->first();
+        if(!$stock_scan_stock_model){
+            /////本库位不存在盘点 不允许修改
+            return response()->json(api_msg(1,'本库位编码未盘点本库位'));
+        }
+       $stock_scan_stock_detail_model =  StockScanStockDetailModel::where('op_sn',$stock_count_sn)->where('stock_id',$stock_model->id)->where('fashion_code',$fashion_code)->where('fashion_size',$fashion_size)->first();
+
+
+    if(!$stock_scan_stock_detail_model){
+        /////本库位不存在盘点 不允许修改
+        return response()->json(api_msg(1,'本库位没有盘点记录 无法修改'));
+    }
+    $stock_scan_stock_detail_model = $stock_scan_stock_detail_model -> update(['fashion_num'=>$fashion_num]);
+    if(!$stock_scan_stock_detail_model){
+        return response()->json(api_msg(1,'更新失败'));
+    }
+
+    ////////进行同步库位更改
+    $stock_detail =  StockDetailModel::where('stock_id',$stock_model->id)->where('fashion_code',$fashion_code)->where('fashion_size',$fashion_size)->first();
+    if(!$stock_detail){
+        return response()->json(api_msg(1,'库位不存在本产品'));
+    }
+    $res = $stock_detail -> update(['fashion_num'=>$fashion_num]);
+
+    if(!$res){
+        return response()->json(api_msg(1,'更新产品库存失败'));
+    }
+
+    return response()->json(api_msg(0,'成功'));
+
+}
+
+public function moveStockRecord(Request $request){
+      ////移位记录
+   $stock_move =  StockMoveModel::where(function ($query){
+
+    })->withxy(['stockMoveDetail'=>['id','stock_move_sn','or_stock_sn','ta_stock_sn','data']])->get();
+
+   $stock_move = XY::with($stock_move)->wish('stockMoveDetail')->add('value')->except('data')->get();
+
+    return response()->json(api_msg(0,'成功',$stock_move));
+
+
+}
+
+    /**
+     * @api {get} /api/export 按照学校或者产品名称导出产品库位库存信息
+     * @apiVersion 2.0.0
+     * @apiName export
+     * @apiGroup group_so
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} fashion_code 产品编码
+     * @apiParam {int}  school_name 学校名称
+     * @apiDescription 按照学校或者产品名称导出产品库位库存信息api
+     *
+     * @apiSampleRequest  /api/export
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":1,"msg":"所选地址不存在","data":[]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+
+public function export(){
+////导出产品信息以及器所在的库位等信息
+
+    $box_id = ObjectHelper::getInstance(BoxModel::class)->belongToStock();
+
+    $need = ['boxDetail'=>[function($query)use($box_id){
+        $query -> whereIn('box_id',$box_id)->select('box_id','fashion_code','fashion_size','fashion_num');
+    },'box'=>['id','box_sn','stockBox'=>['stock_id','box_sn','stock'=>['stock_sn','id']]]],'stockDetail'=>['stock_id','fashion_code','fashion_size','fashion_num','stock'=>['stock_sn','id']]];
+
+
+    $fashion_model = FashionModel::where(function ($query){
+  $query -> where('code','07M10008A');
+ })->withxy($need)->get(['code','real_name']);
+
+$temp = [];
+
+ foreach ($fashion_model as $v){
+     $temp[] =  $v -> hasXHStockNew();
+ }
+
+ $new_temp = [];
+ foreach ($temp as $v){
+     $num = 0;
+     foreach ($v as $vv){
+         $new_temp[] = $this -> sortForExport($vv);
+         $num = $num + $vv['fashion_num'];
+     }
+      $a = [];
+      $a['fashion_code'] =  '合计';
+      $a['fashion_name'] = $num;
+      $a['fashion_size'] = '';
+      $a['fashion_num'] = '';
+      $a['stock_sn'] = '';
+      $a['total_num'] = '';
+
+      array_push($new_temp,$a);
+
+ }
+
+
+   $export = [];
+    $export[] =$new_temp;
+
+    $sheet_title = ['导出数据'];
+    $head_arr=['产品编码','产品名称','尺码','数量','库位'];
+
+   Excel::export($export,$head_arr,$title='导出表格',$sheet_title);
+    //////////////执行导出
+   // ExcelHelper::exports($export,$head_arr,$title='导出表格',$sheet_title);
+
+}
+
+/**
+ * 格式化位导出的格式
+ * @param
+ * @return mixed
+ */
+  public function sortForExport($data){
+     $temp = [];
+     $temp['fashion_code'] = $data['fashion_code'];
+     $temp['fashion_name'] = $data['fashion_name'];
+     $temp['fashion_size'] = $data['fashion_size'];
+     $temp['fashion_num'] = $data['fashion_num'];
+     $temp['stock_sn'] = $data['stock_sn'];
+     return $temp;
+  }
+
+
+
+
+
+
+
 
 }

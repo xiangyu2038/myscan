@@ -18,6 +18,10 @@ public function box(){
     public function fashion(){
         return $this -> hasOne('App\Models\Admin\FashionModel','code','fashion_code');
     }
+    public function getStockSn(){
+
+        return $this -> box -> stock_sn;
+    }
 
 
 

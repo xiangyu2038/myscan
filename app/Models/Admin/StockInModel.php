@@ -3,6 +3,7 @@
 namespace App\Models\Admin;
 
 use Illuminate\Database\Eloquent\Model;
+use XiangYu2038\Wish\XY;
 
 class StockInModel extends BaseModel
 {
@@ -27,6 +28,41 @@ class StockInModel extends BaseModel
     public function getJZBoxNumAttribute(){
      return   $this -> stockScanBox ->count();
     }
+
+    /**
+     * 已经检针的箱子编码
+     * @param
+     * @return mixed
+     */
+    public function hasJzBoxSn($stock_scan_box_model=[]){
+        return  XY::with(collect($stock_scan_box_model))->delete('box')->get()->pluck('box_sn')->unique();///已经针检 的箱子编码
+    }
+    /**
+     * 已经搬箱的箱子编码
+     * @param
+     * @return mixed
+     */
+    public function hasBxBoxSn($stock_scan_box_model=[]){
+        return  XY::with(collect($stock_scan_box_model))->delete('box')->get()->pluck('box_sn')->unique();///已经针检 的箱子编码
+    }
+    /**
+     * 检针未搬箱的箱子编码
+     * @param
+     * @return mixed
+     */
+    public  function  wZSn($temp_j_z,$temp_b_d){
+        $has_j_z = $this -> hasJzBoxSn($temp_j_z);//区别
+        $has_b_x = $this -> hasJzBoxSn($temp_b_d);//区别
+        return   $has_j_z -> diff($has_b_x);
+
+
+}
+    
+    /**
+     * 证件
+     * @param 
+     * @return mixed
+     */
 
     /**
      * 入库箱子数

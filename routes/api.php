@@ -25,7 +25,10 @@ Route::namespace('Api')->group(function () {
 });
 
 //给一个预售新建一个批次
-Route::namespace('Api\Storage')->group(function () {
+Route::namespace('Api\Storage')->group(/**
+ *
+ */
+    function () {
      /////////////////////////////////////////////////////////////////////////
     /////箱子列表
     Route::get('/boxList', 'BoxManageController@boxList')->name('box_list');
@@ -89,6 +92,15 @@ Route::namespace('Api\Storage')->group(function () {
     Route::post('/addStockCount', 'StockController@addStockCount')->name('add_stock_count');
 
 
+    /////修改盘点单里某个库位的产品数量
+        Route::any('/alertStockCountFashionNum', 'StockController@alertStockCountFashionNum')->name('alert_stockCount_fashion_num');
+
+        ////查询移位单记录
+        Route::any('/moveStockRecord', 'StockController@moveStockRecord')->name('move_stock_record');
+
+
+        ////导出信息
+        Route::any('/export', 'StockController@export')->name('export');
     ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -101,9 +113,24 @@ Route::namespace('Api\PDA')->prefix('pda')->group(function () {
 
     Route::any('/addStockIn', 'PDAController@addStockIn')->name('add_stock_in');
     Route::any('/stockInList', 'PDAController@stockInList')->name('stock_in_list');
+
+    Route::any('/addStockOut', 'PDAController@addStockOut')->name('add_stock_out');
+    Route::any('/stockOutList', 'PDAController@stockOutList')->name('stock_out_list');
+
     Route::any('/setEndCheckNeedle', 'PDAController@setEndCheckNeedle')->name('set_end_check_needle');
     Route::any('/submitAudit', 'PDAController@submitAudit')->name('submit_audit');
 
+    //////列出本次没有绑定的箱子
+    Route::any('/listNotBindingBox', 'PDAController@listNotBindingBox')->name('list_not_binding_box');
 
+    ////新增一个移位单
+    Route::any('/addMoveList', 'PDAController@addMoveList')->name('add_move_list');
 
+    /////////查询一个库位里面有啥 有箱子 有产品
+    Route::any('/queryStockHas', 'PDAController@queryStockHas')->name('query_stock_has');
+    //////进行移位操作
+    Route::any('/applyMoveStock', 'PDAController@applyMoveStock')->name('apply_move_stock');
+
+    ////出库动作
+    Route::any('/stockOut', 'PDAController@stockOut')->name('stock_out');
 });

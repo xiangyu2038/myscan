@@ -1,46 +1,11 @@
 <?php
 namespace App\Models\Admin;
-use App\Service\Laravel\Builder;
 use Illuminate\Database\Eloquent\Model;
+use XiangYu2038\WithXy\WithXy;
+
 class BaseModel extends Model
 {
-
-    /**
-     * Begin querying a model with eager loading.
-     *
-     * @param  array|string  $relations
-     * @return \Illuminate\Database\Eloquent\Builder|static
-     */
-    public static function withxy($relations)
-    {
-
-      return (new static)->newQuery()->withxy(
-            $relations
-        );
-    }
-    /**
-     * Create a new Eloquent query builder for the model.
-     *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder|static
-     */
-    public function newEloquentBuilder($query)
-    {
-       return new Builder($query);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
+    use WithXy;
 
     public function scopewithonly($query, $relation, Array $columns)
     {

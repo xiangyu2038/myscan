@@ -2,6 +2,8 @@
 
 namespace App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
+use XiangYu2038\Wish\XY;
+
 class FashionModel extends BaseModel
 {
 
@@ -82,6 +84,26 @@ class FashionModel extends BaseModel
     }
 
     /**
+     * 这个商品有多少现货库存
+     * @param
+     * @return mixed
+     */
+    public function hasXHStockNew(){
+        /////首先查询在箱子里的库存
+        $box_stock = $this->hasBoxStockNew();
+        /////库位里的库存
+        $stock = $this->hasStockNew();
+
+
+        $res = array_merge($box_stock,$stock);
+        $res =   $this -> assortFashionWithStocks($res);
+
+        //////合并起来
+        return $res;
+
+    }
+
+    /**
      * 查询在途库存
      * @param
      * @return mixed
@@ -141,12 +163,47 @@ public function hasZTStock(){
     }
 
     /**
+     * 依赖 ['boxDetail'=>[function($query)use($box_id){
+    $query -> whereIn('box_id',$box_id)->select('box_id','fashion_code','fashion_size','fashion_num');
+    },'box'=>['id','box_sn','stockBox'=>['stock_id','box_sn','stock'=>['stock_sn','id']]]]]
+     * @param
+     * @return mixed
+     */
+    public function  hasBoxStockNew(){
+        ////首先查询这个商品在箱子里的产品数量
+
+        $res = XY::with($this)->except('code','box_id','stock_id')->delete('stockDetail',true)->wish('boxDetail')->add('stock_sn')->delete('box',true)->except('box_id')->wish('box')->add('stock_sn')->wish('stockBox')->add('stock_sn')->get()->toArray();
+        $temp = [];
+        foreach ($res['box_detail'] as $v){
+
+            $v['fashion_name'] = $res['real_name'];
+                 $temp [] = $v;
+
+        }
+
+        return $temp ;
+    }
+
+    /**
      * 这个产品直接放在库位里的库存
      * @param
      * @return mixed
      */
     public function hasStock(){
         return  this($this-> stockDetail,['fashion_name','fashion_code','fashion_size','fashion_num','stock'=>['stock_sn','stock_name','floor'],'box_sn']);
+    }
+
+    public function hasStockNew(){
+
+        $res = XY::with($this)->delete('boxDetail',true)->wish('stockDetail')->except('stock_id','id')->add('stock_sn')->delete('stock')->get()->toArray();
+        $temp = [];
+        foreach ($res['stock_detail'] as $v){
+            $v['fashion_name'] = $res['real_name'];
+            $temp [] = $v;
+
+        }
+
+       return $temp;
     }
 
     /**
@@ -167,15 +224,16 @@ public function hasZTStock(){
     /**
      * 对扫描枪进来的编号进行格式化
      * @param
+     * @param
      * @return mixed
      */
-    public function fashionCode($scan_fashion){
+    public function fashionCode($scan_fashion,$num=1){
         $scan_fashion=trim($scan_fashion);
         $a = strripos($scan_fashion,'A');
         $array=[];
         $array['fashion_code']=substr($scan_fashion,0,$a+1);
         $array['fashion_size']=substr($scan_fashion,$a+1);
-        $array['fashion_num']=1;
+        $array['fashion_num']=$num;
 
         return $array;
 
@@ -221,6 +279,35 @@ public function hasZTStock(){
 
         foreach ($all_fashions as $v){
             $array[$v['fashion_code']][$v['fashion_size']][$v['stock']['stock_sn']][]=$v;
+        }
+
+        $one = function ($data){
+            $num = 0 ;
+            foreach ($data as $v){
+                $num = $num + $v['fashion_num'];
+            }
+
+            $data[0]['fashion_num'] = $num;
+            return $data [0];
+        };
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+            foreach ($v as $vv){
+               foreach ($vv as $vvv)
+                $new_array[]=$one($vvv);
+            }
+        }
+
+        return $new_array;
+
+
+    }
+    public function assortFashionWithStocks($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+            $array[$v['fashion_code']][$v['fashion_size']]['stock_sn'][]=$v;
         }
 
         $one = function ($data){

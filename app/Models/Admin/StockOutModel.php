@@ -15,8 +15,8 @@ class StockOutModel extends BaseModel
      * @param 
      * @return mixed
      */
-public function add(){
-   $this_build =  $this -> build('出库单','常规出库','陈翔宇');
+public function add($name='出库单',$operate='陈翔宇',$type='常规出库'){
+   $this_build =  $this -> build($name,$type,$operate);
     return $this -> create($this_build);
 }
 
@@ -30,6 +30,7 @@ public function build($name,$type,$operate){
    $temp['stock_out_sn'] = $this -> stockOutSn();
    $temp['name'] = $name;
    $temp['type'] = $type;
+   $temp['operate'] = $operate;
    return $temp;
 
 }

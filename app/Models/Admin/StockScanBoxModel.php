@@ -22,7 +22,9 @@ class StockScanBoxModel extends BaseModel
         return $this -> belongsTo('App\Models\Admin\StockScanStockModel','stock_scan_stock_id');
     }
 
-
+    public function setTest(){
+        return 5;
+    }
 
 }
 

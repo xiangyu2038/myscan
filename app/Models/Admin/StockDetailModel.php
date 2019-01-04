@@ -83,5 +83,12 @@ class StockDetailModel extends BaseModel
         $created_at = $updated_at = current_time();
         return compact('stock_sn','fashion_code','fashion_size','fashion_num','fashion_name','created_at','updated_at');
     }
+    public function getBoxSn(){
+        return $this->fashion_code.$this->fashion_size;
+    }
+    public function getStockSn(){
+
+       return $this->stock->stock_sn;
+    }
 
 }

@@ -78,7 +78,14 @@ public function box(){
 // public function chen_xiang_yu_Stock($relation,$temp){
 //     return [$temp[0] =>  $this->$relation->floor.'层楼:  '.$this->$relation->stock_name.'('.$this->$relation->stock_sn.')'];
 // }
+public function getFashionNum(){
 
+    return $this ->box ->fashion_num;
+}
+
+    public function getStockSn(){
+        return $this -> stock -> stock_sn;
+    }
 
 }
 
