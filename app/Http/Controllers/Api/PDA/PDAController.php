@@ -8,6 +8,7 @@ use App\Models\Admin\StockCountDetailModel;
 use App\Models\Admin\StockCountModel;
 use App\Models\Admin\StockInModel;
 use App\Models\Admin\StockModel;
+use App\Models\Admin\StockMoveModel;
 use App\Models\Admin\StockOutModel;
 use App\Models\Admin\StockScanBoxModel;
 use App\Models\Admin\TestModel;
@@ -27,6 +28,15 @@ class PDAController extends Controller
      * @apiDefine group_pda pda模块
      */
 
+    public function __construct(Request $request)
+    {
+       //调用中间件
+        $a = Cache::store('file')->get('bb');
+        //$a['access_token'] = 3;
+        $request->headers->set('Authorization','Bearer '.$a['access_token']);
+
+        $this->middleware('api-auth:api');
+    }
     public function test(){
       $a = ['stockDetails'=>['id','stock_id','fashion_code','fashion'=>[function($query){
            $query ->select('id','code');
@@ -631,15 +641,19 @@ dd(__LINE__);
      * @apiErrorExample (json) 错误示例:
      *     {"code":"1","msg":"失败","data":[]}
      */
-    public function applyMoveStock(){
+    public function applyMoveStock(Request $request){
         ////进行移位操作
-        $or_stock_sn = '4_S_A01Z01C01';///源库位编码
-        $ta_stock_sn = '4_S_A01Z01C02';///目标库位编码
-        $stock_move_sn = 'CKXH_812289859';///移位单
-        $data =  [
-             ['sn'=>'CKXH201896c728','fashion_num'=>1],
-             ['sn'=>'T1805136A130','fashion_num'=>1],
+        $or_stock_sn = $request -> post('or_stock_sn');
+        $ta_stock_sn = $request -> post('ta_stock_sn');
+        $stock_move_sn = $request -> post('stock_move_sn');
+        $data = $request -> post('data');
 
+
+        $or_stock_sn = '4_S_A01Z01C01';///源库位编码
+        $ta_stock_sn = '4_S_A01Z01C01';///目标库位编码
+        $stock_move_sn = 'CKXH_901047670';///移位单
+        $data =  [
+             ['sn'=>'T1806090A120','num'=>1],
         ];
 
         $stock_service = ObjectHelper::getInstance(StockService::class);

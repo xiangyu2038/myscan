@@ -18,11 +18,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
+
 Route::namespace('Api')->group(function () {
     //////发货查询接口
     Route::get('/wuLiu', 'SellOrderController@wuLiu')->name('wu_liu');
 
 });
+
+
 
 //给一个预售新建一个批次
 Route::namespace('Api\Storage')->group(/**
@@ -107,6 +111,11 @@ Route::namespace('Api\Storage')->group(/**
 
 });
 Route::namespace('Api\PDA')->prefix('pda')->group(function () {
+    ///登陆注册
+    Route::any('/login', 'LoginController@login')->name('login');
+    Route::any('/logout', 'LoginController@logout')->name('logout');
+    Route::any('/refresh', 'LoginController@refresh')->name('refresh');
+
     Route::get('/test', 'PDAController@test')->name('test');
     Route::any('/stockCountList', 'PDAController@stockCountList')->name('stock_count_list');
     Route::any('/submitScan', 'PDAController@submitScan')->name('submit_scan');

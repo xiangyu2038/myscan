@@ -17,7 +17,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
     ];
-
+    protected $table = 'ts_manager';
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -26,4 +26,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+    public function findForPassport($login)
+    {
+        return $this->Where('username', $login)->first();
+    }
 }

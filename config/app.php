@@ -151,7 +151,7 @@ return [
         Illuminate\Encryption\EncryptionServiceProvider::class,
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
-        Illuminate\Hashing\HashServiceProvider::class,
+       // Illuminate\Hashing\HashServiceProvider::class,///此处的服务提供者更换为自己的服务提供者
         Illuminate\Mail\MailServiceProvider::class,
         Illuminate\Notifications\NotificationServiceProvider::class,
         Illuminate\Pagination\PaginationServiceProvider::class,
@@ -178,7 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         /////my-add
-
+        \App\Providers\MyHashServiceProvider::class,///我的密码加密规则
 
     ],
 

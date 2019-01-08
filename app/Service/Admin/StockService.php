@@ -528,7 +528,7 @@ $parse_data = $this -> parseMoveData($data);
          $this -> addStockMoveRecord($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);///记录移位日志
 
        // \DB::commit();
-        return msg(0,'ok');
+        return msg(0,'ok',$data);
     }catch (\Exception $e){
         return  msg(1,$e->getMessage());
     }

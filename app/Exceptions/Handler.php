@@ -58,6 +58,11 @@ class Handler extends ExceptionHandler
             }
 
         }
+        if ($exception instanceof ApiException) {
+            ///api 错误页面
+            return response()->json(msg(1,'未登录'));
+        }
+
 
         return parent::render($request, $exception);
     }
