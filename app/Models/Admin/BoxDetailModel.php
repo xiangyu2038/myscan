@@ -23,6 +23,10 @@ public function box(){
         return $this -> box -> stock_sn;
     }
 
+    public function getBoxSn(){
+        return $this -> box -> box_sn;
+    }
+
 
 
 }

@@ -758,6 +758,230 @@
   },
   {
     "type": "get",
+    "url": "/api/pda/queryFashion",
+    "title": "查询一个产品的库位库存信息",
+    "version": "2.0.0",
+    "name": "queryFashion",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "fashion_code",
+            "description": "<p>产品编码</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>查询一个产品的库位库存信息api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/queryFashion"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_code",
+            "description": "<p>产品编码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_size",
+            "description": "<p>产品尺码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_num",
+            "description": "<p>产品数量</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "stock_sn",
+            "description": "<p>库存信息</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_name",
+            "description": "<p>产品名称</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "school",
+            "description": "<p>学校</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[{\"fashion_code\":\"W1702042A\",\"fashion_size\":\"130\",\"fashion_num\":20,\"stock_sn\":\"4_S_A01Z02C01\",\"fashion_name\":\"\\u82f1\\u4f26\\u5b66\\u9662\\u98ce\\u77ed\\u8896\\u886c\\u886b\",\"school\":\"\\u4e0a\\u6d77\\u5e02\\u6c11\\u529e\\u4e2d\\u82af\\u5b66\\u6821\"}]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "get",
+    "url": "/api/pda/queryStockFashionList",
+    "title": "查询一个库位中的产品列表(包括箱子)",
+    "version": "1.0.0",
+    "name": "queryStockFashionList",
+    "group": "group_pda",
+    "permission": [
+      {
+        "name": "登录用户"
+      }
+    ],
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "int",
+            "optional": false,
+            "field": "stock_sn",
+            "description": "<p>库位编码</p>"
+          }
+        ]
+      }
+    },
+    "description": "<p>查询一个库位中的产品列表api</p>",
+    "sampleRequest": [
+      {
+        "url": "/api/pda/queryStockFashionList"
+      }
+    ],
+    "success": {
+      "fields": {
+        "返回值": [
+          {
+            "group": "返回值",
+            "type": "int",
+            "optional": false,
+            "field": "code",
+            "description": "<p>状态码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "msg",
+            "description": "<p>提示信息</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_name",
+            "description": "<p>产品名称</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_code",
+            "description": "<p>产品编码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_size",
+            "description": "<p>产品尺码</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "fashion_num",
+            "description": "<p>产品数量</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "school",
+            "description": "<p>学校</p>"
+          },
+          {
+            "group": "返回值",
+            "type": "string",
+            "optional": false,
+            "field": "box_sn",
+            "description": "<p>箱子编码</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "成功示例:",
+          "content": "{\"code\":0,\"msg\":\"ok\",\"data\":[{\"fashion_name\":\"\\u8212\\u9002\\u9633\\u5149\\u897f\\u88e4\",\"fashion_code\":\"M1807148A\",\"fashion_size\":\"120\",\"fashion_num\":22,\"school\":\"\",\"box_sn\":\"CKXH1901107376\"},{\"fashion_name\":\"\\u82f1\\u4f26\\u5b66\\u9662\\u98ce\\u77ed\\u8896\\u886c\\u886b\",\"fashion_code\":\"W1702042A\",\"fashion_size\":\"140\",\"fashion_num\":20,\"school\":\"\\u4e0a\\u6d77\\u5e02\\u6c11\\u529e\\u4e2d\\u82af\\u5b66\\u6821\",\"box_sn\":\"CKXH1901107376\"},{\"fashion_name\":\"\\u8212\\u9002\\u9633\\u5149\\u897f\\u88e4\",\"fashion_code\":\"M1807148A\",\"fashion_size\":\"120\",\"fashion_num\":5,\"school\":\"\",\"box_sn\":\"CKXH1901105081\"},{\"fashion_name\":\"\\u8131\\u5378\\u5f0f\\u4e09\\u5408\\u68c9\\u98ce\\u8863\",\"fashion_code\":\"T1806117A\",\"fashion_size\":\"130\",\"fashion_num\":15,\"school\":\"\\u676d\\u5dde\\u91c7\\u5b9e\\u6559\\u80b2\\u96c6\\u56e2\",\"box_sn\":\"CKXH1901105081\"},{\"fashion_name\":\"\\u6e05\\u723d\\u8212\\u9002\\u77ed\\u8896T\\u6064\",\"fashion_code\":\"T1801234A\",\"fashion_size\":\"140\",\"fashion_num\":20,\"school\":\"\\u4e0a\\u6d77\\u5fb7\\u82f1\\u4e50\\u5b66\\u9662\",\"box_sn\":\"CKXH1901102480\"},{\"fashion_name\":\"\\u82f1\\u4f26\\u5b66\\u9662\\u98ce\\u77ed\\u8896\\u886c\\u886b\",\"fashion_code\":\"W1702042A\",\"fashion_size\":\"130\",\"fashion_num\":9,\"school_name\":\"\\u4e0a\\u6d77\\u5e02\\u6c11\\u529e\\u4e2d\\u82af\\u5b66\\u6821\",\"box_sn\":\"\"}]}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "(json) 错误示例:",
+          "content": "{\"code\":\"1\",\"msg\":\"失败\",\"data\":[]}",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/Http/Controllers/Api/PDA/PDAController.php",
+    "groupTitle": "pda模块"
+  },
+  {
+    "type": "get",
     "url": "/api/pda/queryStockHas",
     "title": "库位中所有箱子和产品",
     "version": "2.0.0",

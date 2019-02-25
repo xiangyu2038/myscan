@@ -52,6 +52,7 @@ class StockInModel extends BaseModel
      */
     public  function  wZSn($temp_j_z,$temp_b_d){
         $has_j_z = $this -> hasJzBoxSn($temp_j_z);//区别
+
         $has_b_x = $this -> hasJzBoxSn($temp_b_d);//区别
         return   $has_j_z -> diff($has_b_x);
 

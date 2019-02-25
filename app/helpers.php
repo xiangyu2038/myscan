@@ -238,6 +238,24 @@ function pick_up($array,$need){
     return $temp;
 }
 
+/**
+ * 提取元素
+ * @param 
+ * @return mixed
+ */
+function collapse($array){
+    $temp = [];
+    foreach ($array as $v){
+        if(is_array($v)){
+
+            $temp = array_merge($temp,collapse($v));
+        }else{
+            $temp[] = $v;
+        }
+    }
+    return $temp;
+}
+
 
 
 

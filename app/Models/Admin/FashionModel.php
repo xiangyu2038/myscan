@@ -102,6 +102,18 @@ class FashionModel extends BaseModel
         return $res;
 
     }
+    public function hasXHStockHasBox(){
+        /////首先查询在箱子里的库存
+        $box_stock = $this->hasBoxStockNew();
+        /////库位里的库存
+        $stock = $this->hasStockNew();
+        $stock = $this -> assortFashionWithStocks($stock);
+
+        $res = array_merge($box_stock,$stock);
+        //////合并起来
+        return $res;
+
+    }
 
     /**
      * 查询在途库存
@@ -172,11 +184,12 @@ public function hasZTStock(){
     public function  hasBoxStockNew(){
         ////首先查询这个商品在箱子里的产品数量
 
-        $res = XY::with($this)->except('code','box_id','stock_id')->delete('stockDetail',true)->wish('boxDetail')->add('stock_sn')->delete('box',true)->except('box_id')->wish('box')->add('stock_sn')->wish('stockBox')->add('stock_sn')->get()->toArray();
+        $res = XY::with($this)->except('code','box_id','stock_id')->delete('stockDetail',true)->wish('boxDetail')->add('stock_sn')->add('box_sn')->delete('box',true)->except('box_id')->wish('box')->add('stock_sn')->wish('stockBox')->add('stock_sn')->get()->toArray();
+
         $temp = [];
         foreach ($res['box_detail'] as $v){
-
             $v['fashion_name'] = $res['real_name'];
+            $v['school'] = $res['school'];
                  $temp [] = $v;
 
         }
@@ -199,6 +212,8 @@ public function hasZTStock(){
         $temp = [];
         foreach ($res['stock_detail'] as $v){
             $v['fashion_name'] = $res['real_name'];
+            $v['school'] = $res['school'];
+            $v['box_sn'] = '';
             $temp [] = $v;
 
         }
@@ -238,6 +253,43 @@ public function hasZTStock(){
         return $array;
 
     }
+
+    /**
+     * 去重
+     * @param
+     * @return mixed
+     */
+
+    public function assortFashionNoSize($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+             unset($v['fashion_size']);
+            $array[$v['fashion_code']][]=$v;
+        }
+
+        $one = function ($data){
+            $num = 0 ;
+            foreach ($data as $v){
+                $num = $num + $v['fashion_num'];
+            }
+
+            $data[0]['fashion_num'] = $num;
+            return $data [0];
+        };
+
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+
+                $new_array[]=$one($v);
+
+        }
+        return $new_array;
+
+
+    }
+
 
     /**
      * 对相同尺码 相同编码的数据进行去重
@@ -303,11 +355,11 @@ public function hasZTStock(){
 
 
     }
-    public function assortFashionWithStocks($all_fashions){
+    public function assortFashionWithStockss($all_fashions){
         $array = [];
 
         foreach ($all_fashions as $v){
-            $array[$v['fashion_code']][$v['fashion_size']]['stock_sn'][]=$v;
+            $array[$v['fashion_code']][$v['fashion_size']][$v['stock_sn']][]=$v;
         }
 
         $one = function ($data){
@@ -330,6 +382,56 @@ public function hasZTStock(){
 
         return $new_array;
 
+
+    }
+    public function assortFashionWithStocks($all_fashions){
+        $array = [];
+
+        foreach ($all_fashions as $v){
+            $array[$v['fashion_code']][$v['fashion_size']][$v['stock_sn']][]=$v;
+        }
+
+    $a = function ($data){
+          $num = 0;
+          foreach ($data as $v){
+              $num = $num + $v['fashion_num'];
+          }
+        $data[0]['fashion_num'] = $num;
+          return $data[0];
+    };
+        /////计算个数
+        $new_array = [];
+        foreach ($array as $v){
+            foreach ($v as $vv){
+               foreach ($vv as $vvv){
+                   $new_array[]=$a($vvv);
+
+               }
+
+            }
+        }
+
+        return $new_array;
+
+
+    }
+
+    public function addFashionName($data){
+        $fashion_code = array_column($data,'fashion_code');
+
+        $fashion_model = $this -> whereIn('code',$fashion_code)->get(['real_name','code'])->toArray();
+
+        foreach ($data as &$v){
+            $v['fashion_name'] = '';
+            foreach ($fashion_model as $vv){
+                  if($v['fashion_code'] == $vv['code']){
+                      $v['fashion_name'] = $vv['real_name'];
+                  }
+              }
+
+        }
+unset($v);
+        return $data;
 
     }
 }

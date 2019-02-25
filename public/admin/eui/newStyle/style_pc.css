@@ -1094,7 +1094,7 @@ body {
   margin: 0;
   line-height: 26px;
   margin-top: 60px;
-  background: url(/Public/Behind/images/box-open.png) no-repeat 25px top;
+  background: url(/admin/eui/images/box-open.png) no-repeat 25px top;
   cursor: pointer;
 }
 .scanning-wrap .scanning-show-main .scanning-box.hide {
@@ -1153,7 +1153,7 @@ body {
   font-size: 14px;
   width: 50px;
   height: 50px;
-  background-image: url(/Public/Behind/images/box-open.png);
+  background-image: url(/admin/eui/images/box-open.png);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -1176,16 +1176,16 @@ body {
   color: #6cf;
 }
 .scanning-wrap .scanning-box-list .active .scanning-box {
-  background-image: url(/Public/Behind/images/box-open-active.png) !important;
+  background-image: url(/admin/eui/images/box-open-active.png) !important;
 }
 .scanning-wrap .scanning-box-list .close {
   background: #f5f8fb;
 }
 .scanning-wrap .scanning-box-list .close .scanning-box {
-  background-image: url(/Public/Behind/images/box-close.png);
+  background-image: url(/admin/eui/images/box-close.png);
 }
 .scanning-wrap .scanning-box-list .close .scanning-box.active {
-  background-image: url(/Public/Behind/images/box-close-active.png);
+  background-image: url(/admin/eui/images/box-close-active.png);
 }
 .scanning-wrap .scanning-box-box li {
   padding-right: 35px;

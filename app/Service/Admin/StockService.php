@@ -27,6 +27,7 @@ class StockService
     public function addRecord($op_model,$data,$type,$my_type=null){
         $this -> type = $type;////操作的类型细分类型
         $this -> op_model = $op_model;///操作的单据模型
+
         foreach ($data as $v){
             /////对扫描的一个单位添加记录
             $this ->con_type = $this->judgeCode($v['container']);
@@ -74,6 +75,7 @@ class StockService
         if($this ->con_type  == 1){
 
             $StockCountStockModel = ObjectHelper::getInstance(StockScanStockModel::class);
+
             $build_stock_count_stock = $StockCountStockModel->build($this->op_model->sn,$this-> model->id,$this->type);
 
             $res= $StockCountStockModel->create($build_stock_count_stock);
@@ -527,7 +529,7 @@ $parse_data = $this -> parseMoveData($data);
         ////开启移位记录功能
          $this -> addStockMoveRecord($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);///记录移位日志
 
-       // \DB::commit();
+        \DB::commit();
         return msg(0,'ok',$data);
     }catch (\Exception $e){
         return  msg(1,$e->getMessage());
@@ -582,7 +584,8 @@ public function addStock($stock_model,$data){
       foreach ($data['fashion_info'] as $fashion){
           $stock_model -> inFashion($fashion);
       }
-    foreach ($data['box_info'] as $fashion){
+
+     foreach ($data['box_info'] as $fashion){
         $stock_model -> inBox($fashion);///去出库
     }
     return ;
@@ -597,6 +600,63 @@ public function addStockMoveRecord($or_stock_sn,$ta_stock_sn,$data,$stock_move_s
     StockMoveDetailModel::create($build);
 
 }
+
+/**
+ * 导入数据
+ * @param
+ * @return mixed
+ */
+public function dealStockImport($data){
+
+   $one = function ($data){
+
+
+       $temp = [];
+       for ($i=0;$i<$data['C'];$i++){
+           $temp[] = $data['A'].$data['B'];
+       }
+       return $temp;
+   };
+
+
+   $temp = [];
+
+       foreach ($data as $vkey=> $vv){
+
+           if($vkey==1){
+               continue;
+           }
+           if($vv['D']){
+               $temp[$vv['D']][] = $one($vv);
+           }
+
+       }
+
+
+   $function = function($data,$key){
+       $temp = [];
+       foreach ($data as $v){
+           foreach ($v as $vv){
+               $temp['container'] = $key;
+               $temp['element'][] = $vv;
+           }
+       }
+
+       return $temp;
+   };
+
+
+foreach ($temp as $key => &$v){
+   $v = $function($v,$key);
+}
+unset($v);
+
+    return $temp;
+
+}
+
+
+
 }
 
 

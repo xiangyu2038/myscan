@@ -173,9 +173,13 @@ class BoxModel extends BaseModel
     public function  belongToStock(){
 
         if(!$this->belong_to_stock){
-            $all_box_sn = StockBoxModel::all()->pluck('id')->toArray();
-           return  array_unique($all_box_sn);
+            $all_box_sn = StockBoxModel::all()->pluck('box_sn')->toArray();
+            $all_box_sn = array_unique($all_box_sn);
+           $all_box_id = BoxModel::whereIn('box_sn',$all_box_sn)->get()->pluck('id');
+            $this->belong_to_stock = $all_box_id;
+           return $all_box_id;
         }
+
        return  $this->belong_to_stock;
 
     }

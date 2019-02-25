@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\PDA;
 
 use App\Helper\ObjectHelper;
+use App\Models\Admin\BoxModel;
+use App\Models\Admin\FashionModel;
+use App\Models\Admin\FashionStockWxModel;
 use App\Models\Admin\StockBoxModel;
 use App\Models\Admin\StockCountDetailModel;
 use App\Models\Admin\StockCountModel;
@@ -11,6 +14,7 @@ use App\Models\Admin\StockModel;
 use App\Models\Admin\StockMoveModel;
 use App\Models\Admin\StockOutModel;
 use App\Models\Admin\StockScanBoxModel;
+use App\Models\Admin\StockScanStockModel;
 use App\Models\Admin\TestModel;
 use App\Service\Admin\StockService;
 use http\Exception;
@@ -20,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\Debug\Exception\FatalErrorException;
 use Illuminate\Routing\Controller as BaseController;
 use App\Http\Controllers\Api\Controller;
+use XiangYu2038\Excel\Excel;
 use XiangYu2038\Wish\XY;
 
 class PDAController extends Controller
@@ -31,27 +36,14 @@ class PDAController extends Controller
     public function __construct(Request $request)
     {
        //调用中间件
-        $a = Cache::store('file')->get('bb');
+       // $a = Cache::store('file')->get('bb');
         //$a['access_token'] = 3;
-        $request->headers->set('Authorization','Bearer '.$a['access_token']);
+        //$request->headers->set('Authorization','Bearer '.$a['access_token']);
 
-        $this->middleware('api-auth:api');
+        //$this->middleware('api-auth:api');
     }
-    public function test(){
-      $a = ['stockDetails'=>['id','stock_id','fashion_code','fashion'=>[function($query){
-           $query ->select('id','code');
-       }]],'stockBox'=>['id','stock_id','box_sn']];
-
-        $a = StockModel::withxy(['stockDetails'=>['id','stock_id','fashion_code']])->get(['id','stock_sn']);
 
 
-        $a = XY::with($a)->wish('stock_details')->add('fashion_code')->get();
-dd(__LINE__);
-
-
-
-
-    }
     /**
      * @api {get} /api/pda/stockCountList 盘点单列表
      * @apiVersion 1.0.0
@@ -169,7 +161,7 @@ dd(__LINE__);
 
           //  $stock_in_id = 4;
             $stock_in_model = StockInModel::find($stock_in_id);
-            $stock_service =  ObjectHelper::getInstance(StockService::class);
+            //$stock_service =  ObjectHelper::getInstance(StockService::class);
             return response()->json( $stock_service -> checkNeedle($stock_in_model,$data));
 
         }elseif($type == 4){
@@ -524,7 +516,8 @@ dd(__LINE__);
         }
         $stock_in_model = ObjectHelper::getInstance(StockInModel::class);
 
-        $w_z = $stock_in_model -> wZSn($temp_j_z,$temp_b_d);
+        $w_z = $stock_in_model -> wZSn($temp_j_z,$temp_b_d)->toArray();
+        $w_z = array_values($w_z);
 
         return response()->json(msg(0,'成功',$w_z));
 
@@ -561,8 +554,8 @@ dd(__LINE__);
         $operate = $request -> post('operate');
 
         ///
-        $name = '第'.rand(0,10000).'次移位';
-        $operate = '陈翔宇'.rand(0,10000).'号';
+//        $name = '第'.rand(0,10000).'次移位';
+//        $operate = '陈翔宇'.rand(0,10000).'号';
         ////
         $stock_move = ObjectHelper::getInstance(StockMoveModel::class);
         $stock_move_build = $stock_move->build($name,$operate);
@@ -647,14 +640,15 @@ dd(__LINE__);
         $ta_stock_sn = $request -> post('ta_stock_sn');
         $stock_move_sn = $request -> post('stock_move_sn');
         $data = $request -> post('data');
+        $data =json_decode($data,true);
+         //$data = $this -> heihei($data);
 
-
-        $or_stock_sn = '4_S_A01Z01C01';///源库位编码
-        $ta_stock_sn = '4_S_A01Z01C01';///目标库位编码
-        $stock_move_sn = 'CKXH_901047670';///移位单
-        $data =  [
-             ['sn'=>'T1806090A120','num'=>1],
-        ];
+//        $or_stock_sn = '4_S_A01Z01C01';///源库位编码
+//        $ta_stock_sn = '4_S_A01Z01C01';///目标库位编码
+//        $stock_move_sn = 'CKXH_901047670';///移位单
+//        $data =  [
+//             ['sn'=>'T1806090A120','num'=>1],
+//        ];
 
         $stock_service = ObjectHelper::getInstance(StockService::class);
         $res =  $stock_service -> applyMoveStock($or_stock_sn,$ta_stock_sn,$data,$stock_move_sn);
@@ -711,6 +705,233 @@ dd(__LINE__);
 
         return response()->json($stock_service -> stockOuts($data,$stock_out_model));
     }
+
+
+    /**
+     * @api {get} /api/pda/queryFashion 查询一个产品的库位库存信息
+     * @apiVersion 2.0.0
+     * @apiName queryFashion
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} fashion_code 产品编码
+     * @apiDescription 查询一个产品的库位库存信息api
+     *
+     * @apiSampleRequest  /api/pda/queryFashion
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     * @apiSuccess (返回值) {string} fashion_code 产品编码
+     * @apiSuccess (返回值) {string} fashion_size 产品尺码
+     * @apiSuccess (返回值) {string} fashion_num 产品数量
+     * @apiSuccess (返回值) {string} stock_sn 库存信息
+     * @apiSuccess (返回值) {string} fashion_name 产品名称
+     * @apiSuccess (返回值) {string} school 学校
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":[{"fashion_code":"W1702042A","fashion_size":"130","fashion_num":20,"stock_sn":"4_S_A01Z02C01","fashion_name":"\u82f1\u4f26\u5b66\u9662\u98ce\u77ed\u8896\u886c\u886b","school":"\u4e0a\u6d77\u5e02\u6c11\u529e\u4e2d\u82af\u5b66\u6821"}]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+    public function queryFashion(Request $request){
+
+         $box_id = ObjectHelper::getInstance(BoxModel::class)->belongToStock();
+         $fashion_code = $request -> get('fashion_code');
+         $fashion_code = ObjectHelper::getInstance(FashionModel::class)->fashionCode($fashion_code);
+
+        $need = ['boxDetail'=>[function($query)use($box_id){
+            $query -> whereIn('box_id',$box_id)->select('box_id','fashion_code','fashion_size','fashion_num');
+        },'box'=>['id','box_sn','stockBox'=>['stock_id','box_sn','stock'=>['stock_sn','id']]]],'stockDetail'=>['stock_id','fashion_code','fashion_size','fashion_num','stock'=>['stock_sn','id']]];
+
+
+        $fashion_model = FashionModel::where(function ($query)use($fashion_code){
+            $query -> where('code',$fashion_code['fashion_code']);
+        })->withxy($need)->get(['code','real_name','school']);
+
+        $temp = [];
+
+        foreach ($fashion_model as $v){
+            $temp[] =  $v -> hasXHStockHasBox();
+        }
+
+        $new_temp = [];
+        foreach ($temp as $v){
+            foreach ($v as $vv){
+                if($fashion_code['fashion_size']){
+                    if($vv['fashion_size'] == $fashion_code['fashion_size']){
+                      $new_temp[] = $vv;
+                    }
+                    continue;
+                }
+                $new_temp[] = $vv;
+            }
+        }
+
+        return response()->json(msg(0,'ok',$new_temp));
+}
+
+
+    /**
+     * @api {get} /api/pda/queryStockFashionList 查询一个库位中的产品列表(包括箱子)
+     * @apiVersion 1.0.0
+     * @apiName queryStockFashionList
+     * @apiGroup group_pda
+     * @apiPermission 登录用户
+     *
+     * @apiParam {int} stock_sn 库位编码
+     * @apiDescription 查询一个库位中的产品列表api
+     *
+     * @apiSampleRequest  /api/pda/queryStockFashionList
+     *
+     * @apiSuccess (返回值) {int} code 状态码
+     * @apiSuccess (返回值) {string} msg 提示信息
+     * @apiSuccess (返回值) {string} fashion_name 产品名称
+     * @apiSuccess (返回值) {string} fashion_code 产品编码
+     * @apiSuccess (返回值) {string} fashion_size 产品尺码
+     * @apiSuccess (返回值) {string} fashion_num 产品数量
+     * @apiSuccess (返回值) {string} school 学校
+     * @apiSuccess (返回值) {string} box_sn 箱子编码
+     *
+     * @apiSuccessExample {json} 成功示例:
+     * {"code":0,"msg":"ok","data":[{"fashion_name":"\u8212\u9002\u9633\u5149\u897f\u88e4","fashion_code":"M1807148A","fashion_size":"120","fashion_num":22,"school":"","box_sn":"CKXH1901107376"},{"fashion_name":"\u82f1\u4f26\u5b66\u9662\u98ce\u77ed\u8896\u886c\u886b","fashion_code":"W1702042A","fashion_size":"140","fashion_num":20,"school":"\u4e0a\u6d77\u5e02\u6c11\u529e\u4e2d\u82af\u5b66\u6821","box_sn":"CKXH1901107376"},{"fashion_name":"\u8212\u9002\u9633\u5149\u897f\u88e4","fashion_code":"M1807148A","fashion_size":"120","fashion_num":5,"school":"","box_sn":"CKXH1901105081"},{"fashion_name":"\u8131\u5378\u5f0f\u4e09\u5408\u68c9\u98ce\u8863","fashion_code":"T1806117A","fashion_size":"130","fashion_num":15,"school":"\u676d\u5dde\u91c7\u5b9e\u6559\u80b2\u96c6\u56e2","box_sn":"CKXH1901105081"},{"fashion_name":"\u6e05\u723d\u8212\u9002\u77ed\u8896T\u6064","fashion_code":"T1801234A","fashion_size":"140","fashion_num":20,"school":"\u4e0a\u6d77\u5fb7\u82f1\u4e50\u5b66\u9662","box_sn":"CKXH1901102480"},{"fashion_name":"\u82f1\u4f26\u5b66\u9662\u98ce\u77ed\u8896\u886c\u886b","fashion_code":"W1702042A","fashion_size":"130","fashion_num":9,"school_name":"\u4e0a\u6d77\u5e02\u6c11\u529e\u4e2d\u82af\u5b66\u6821","box_sn":""}]}
+     *
+     * @apiErrorExample (json) 错误示例:
+     *     {"code":"1","msg":"失败","data":[]}
+     */
+public function queryStockFashionList(Request $request){
+      $stock_sn = $request -> get('stock_sn');
+
+      $stock_model = StockModel::where('stock_sn',$stock_sn)->with('stockBox')->with('stockDetails')->first();
+      if(!$stock_model){
+          return  response()->json(msg(1,'未查询到信息'));
+      }
+    $stock_detail = $stock_model -> stockDetail();
+
+      $fashion_model = ObjectHelper::getInstance(FashionModel::class)->addFashionName($stock_detail);
+
+     return  response()->json(msg(0,'ok',$fashion_model));
+
+}
+
+public function version(){
+    return  response()->json(msg(0,'ok',['version'=>'5','url'=>'https://fir.im/7rmp']));
+}
+
+public function stockOutDetail(Request $request){
+    $stock_out_sn =  $request -> get('stock_out_sn');
+   // $stock_out_sn = 'CKOUT_901247965';
+
+    $stock_scan_stock_model = StockScanStockModel::where('op_sn',$stock_out_sn)->with('stockScanStockDetail.fashion')->with('stockScanBox.box.boxDetail.fashion')->with('stock')->get();
+
+    ///仅仅库存的产品
+    $one = this($stock_scan_stock_model,['stock_scan_stock_detail'=>['fashion_code','fashion_name','fashion_size','fashion_num','stock'=>['stock_sn','chen_xiang_yu_'],'fashion'=>['school','chen_xiang_yu_'],'chen_xiang_yu_']]);
+    $temp_one = [];
+    foreach ($one as $v){
+        foreach ($v as $vv){
+            $vv['box_sn'] = '';
+            $temp_one[] = $vv;
+
+
+        }
+    }
+
+
+////仅仅箱子里的产品
+    $two = this($stock_scan_stock_model,['stock'=>['stock_sn','stock_name','floor'],'stock_scan_box'=>['box'=>['box_sn','box_detail'=>['fashion_code','fashion_name','fashion_size','fashion_num','fashion'=>['school','chen_xiang_yu_'],'chen_xiang_yu_'],'chen_xiang_yu_']]]);
+
+    $temp_two = [];
+    foreach ($two as $a){
+        foreach ($a['stock_scan_box'] as $key=> $v){
+
+            foreach ($v as $vv){
+                 if(is_string($vv)){
+                     $box_sn = $vv;
+                     continue;
+                 }
+
+
+                     $vv['stock_sn'] = $a['stock']['stock_sn'];
+                     $vv['box_sn'] = $box_sn;
+                     $temp_two[] = $vv;
+
+
+            }
+        }
+    }
+
+    $all = array_merge($temp_one,$temp_two);
+
+    $all = ObjectHelper::getInstance(FashionModel::class)->  assortFashionWithStockss($all);
+
+     $all = array_values($all);
+    $all = ObjectHelper::getInstance(FashionModel::class) -> addFashionName($all);
+
+    return response()->json(msg(0,'ok',$all));
+
+}
+
+
+public function  aa($data){
+   $num = 0;
+    foreach ($data as $v){
+        $num = $num + $v['fashion_num'];
+    }
+    return $num;
+}
+
+public function editStockNum(Request $request){
+    ///修改库存数量
+     $stock_sn = $request -> post('stock_sn');
+     $data = $request -> post('data');
+    // Cache::store('file')->put('dd', $_POST, 1000);
+    //    $data = Cache::store('file')->get('dd');
+    //    $data = $data['data'];
+
+    $data = json_decode($data,true);
+//     $data = [
+//       [
+//           'fashion_code'=>'W1702042A',
+//           'fashion_size'=>'130',
+//           'fashion_num'=>'11',
+//           ],
+//       [
+//       'fashion_code'=>'T1805136A',
+//         'fashion_size'=>'120',
+//         'fashion_num'=>'11',
+//     ]
+//     ];
+
+    //////
+    $deal_function = function ($data){
+        $temp = [];
+        foreach ($data as $v){
+
+              for($i=0;$i<$v['fashion_num'];$i++){
+                  $temp[] = $v['fashion_code'].$v['fashion_size'];
+              }
+
+          }
+          return $temp;
+    };
+
+    $data = [
+            [
+                'container' => $stock_sn,
+                'element'=> $deal_function($data)
+            ]
+        ];
+
+
+    $stock_service = ObjectHelper::getInstance(StockService::class);
+    $stock_count_model = new StockCountModel();
+    $count_info = ['title'=>'修改库存'.current_time(),'operate'=>'修改者','note'=>'修改库存','stock_name'=>$stock_sn];
+    $stock_count_model = $stock_count_model -> add($count_info);
+
+
+    return response()->json($stock_service -> stockCount($stock_count_model,$data));
+
+}
 
 }
 

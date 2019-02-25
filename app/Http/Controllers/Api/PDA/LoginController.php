@@ -42,7 +42,8 @@ class LoginController extends Controller
 
         $user_name = $request -> post('user_name');
         $password = $request -> post('password');
-
+//        $user_name  = 'admin';
+//        $password = 'ABCabc123';
 
         $request->request->add([
                'grant_type' => 'password',
@@ -58,7 +59,7 @@ class LoginController extends Controller
                'POST'
            );
 
-           $response = \Route::dispatch($proxy);
+           $response = \Route::dispatch($proxy);//dd($response);
            $content = json_decode($response->getContent(),true);
 
            //$value = Cache::set('bb',$content,3);

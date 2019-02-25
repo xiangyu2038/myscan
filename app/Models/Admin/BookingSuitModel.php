@@ -40,14 +40,15 @@ protected function forThis($this_model){
 public function allFashion($this_model){
     $temp = [];
     foreach ($this_model->bookingFashion as $v){
-        $temp [] = BookingFashionModel::forThis($v);
+       if(!$v -> bookingFashionRefund){
+           $temp [] = BookingFashionModel::forThis($v);
+       }
+
     }
+
 return asssort($temp);///整合一下产品
 
 }
-
-
-
 
 
 }

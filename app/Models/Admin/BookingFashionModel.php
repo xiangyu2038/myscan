@@ -13,6 +13,10 @@ class BookingFashionModel extends BaseModel
         return $this->belongsTo('App\Models\Admin\SizeOrderConfigFashionModel','sizeorder_config_fashion_id');
     }
 
+    public function bookingFashionRefund(){
+        return $this->hasOne('App\Models\Admin\BookingFashionRefund','booking_fashion_info_id');
+    }
+
 /**
  * forthis
  * @param  forthis
@@ -30,6 +34,25 @@ protected function forThis($this_model){
     return $temp;
 }
 
+    public function judge($this_model){
+        if($this_model['type']=='退款'){
+            ///如果为仅退款，那么客服审核通过就可以了
+            if($this_model['is_look']=='Y'&&$this_model['is_pass']=='Y') {
+                ////审核通过
+                return true;
+            }
+            return false;
+        }else{
 
+            //否则需要配送审核
+            if($this_model['pei_song_is_look']=='Y'&&$this_model['pei_song_is_pass']=='Y') {
+                ////审核通过
+                return true;
+            }
+            return false;
+        }
 
+    }
+
+    
 }

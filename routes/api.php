@@ -23,6 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::namespace('Api')->group(function () {
     //////发货查询接口
     Route::get('/wuLiu', 'SellOrderController@wuLiu')->name('wu_liu');
+    Route::get('/kuaiDi', 'SellOrderController@kuaiDi')->name('kuai_di');
 
 });
 
@@ -106,7 +107,9 @@ Route::namespace('Api\Storage')->group(/**
         ////导出信息
         Route::any('/export', 'StockController@export')->name('export');
     ////////////////////////////////////////////////////////////////////////////////////
-
+       ////导入库存
+        Route::any('/stockImport', 'StockController@stockImport')->name('stock_import');
+        Route::any('/stockImportOut', 'StockController@stockImportOut')->name('stock_import_out');
 
 
 });
@@ -142,4 +145,15 @@ Route::namespace('Api\PDA')->prefix('pda')->group(function () {
 
     ////出库动作
     Route::any('/stockOut', 'PDAController@stockOut')->name('stock_out');
+
+
+    ////查询库存
+    Route::any('/queryFashion', 'PDAController@queryFashion')->name('query_fashion');
+    Route::any('/queryStockFashionList', 'PDAController@queryStockFashionList')->name('query_stock_fashion_list');
+    Route::any('/version', 'PDAController@version')->name('version');
+
+    Route::any('/stockOutDetail', 'PDAController@stockOutDetail')->name('stock_out_list');
+    Route::any('/editStockNum', 'PDAController@editStockNum')->name('edit_');
+
+
 });

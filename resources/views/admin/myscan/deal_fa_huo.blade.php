@@ -25,12 +25,13 @@
             <span eui="pull-right">
                                      <a class="eui-btn" eui="primary,sm"  onclick="RE('{{route('admin.myscan.index.print_vip',['batch_id'=>$batch_data['batch_id'],'source'=>$batch_data['batch_source']])}}')">打印学生vip</a>
                                     <a class="eui-btn" eui="primary,sm" onclick="RE('{{route('admin.myscan.index.scaning',['batch_id'=>$batch_data['batch_id']])}}')">货物扫描</a>
+                <a class="eui-btn" eui="primary,sm" onclick="RE('{{route('bind_box.bind_box_display',['batch_id'=>$batch_data['batch_id']])}}')">货物装箱</a>
                 <a class="eui-btn" eui="primary sm" onclick="RE('{{route('admin.myscan.index.end_scan',['batch_id'=>$batch_data['batch_id']])}}')">配送出库</a>
                                     </span>
         </td>
     </tr>
     <tr>
-        <td colspan="4">
+        <td colspan="7">
 
             <div class="eui-btn btn-list" eui="pull-right,sm">
                     <span>
@@ -75,8 +76,10 @@
         <td><a href="javascript:;" class="eui-btn fashion_code_edit" eui="sm,primary" data-layer-url="{{route('admin.myscan.index.edit_fashion_size',['batch_id'=>$batch_data['batch_id']])}}" data-layer-title="修改" data-id="{{$batch_data['batch_id']}},{{$vv['fashion_code']}},{{$vv['fashion_size']}}">修改</a></td>
     </tr>
     <?php endforeach ; ?>
-    <a href="javascript:;" onclick="RE('{{route('admin.myscan.index.export_li_huo',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >导出理货单</a>
-    <a href="javascript:;" onclick="RE('{{route('convert_with_new_batch',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >本批缺货数据一键转换为新的批次</a>
+    <div style="margin-bottom:20px;">
+        <a href="javascript:;" onclick="RE('{{route('admin.myscan.index.export_li_huo',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >导出理货单</a>
+        <a href="javascript:;" onclick="RE('{{route('convert_with_new_batch',['batch_id'=>$batch_data['batch_id']])}}')" class="eui-btn sm" eui="sm,primary" >本批缺货数据一键转换为新的批次</a>
+    </div>
     </div>
     </tbody>
 </table>

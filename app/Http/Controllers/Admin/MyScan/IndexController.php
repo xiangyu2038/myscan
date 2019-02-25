@@ -36,7 +36,24 @@ class IndexController extends Controller
 
         $k_d_c=MyScanService::readCache(config('app.user_config').'k_d_c');
 
+       $temp = [];
+        foreach ($fa_huo_data['fen_lei_with_size'] as $v){
+        $temp[$v['fashion_code']][] = $v;
+    }
 
+$fashion_model = new FashionModel();
+    $new_temp = [];
+        foreach ($temp as $v){
+        $v = $fashion_model -> assortFashion($v);
+        array_multisort(array_column($v,'fashion_size'),SORT_DESC,$v);
+            foreach ($v as $vv){
+                $new_temp[] = $vv;
+            }
+    }
+
+        $fa_huo_data['fen_lei_with_size']  =$new_temp;
+
+       // array_multisort(array_column($fa_huo_data['fen_lei_with_size'],'fashion_size'),SORT_DESC,$arr);
 
         return view('admin.myscan.deal_fa_huo',compact('batch_data','fa_huo_data','k_d_c'));
     }
@@ -110,10 +127,26 @@ class IndexController extends Controller
         $batch_id = $request->get('batch_id');///批次的id
 
         $search_con = $this->searchCon($request);
+         $fashion_size = $request -> get('fashion_size');
+         $sex = $request -> get('sex');
+         $grade = $request -> get('grade');
+          $status = $request -> get('status');
+          $name = $request -> get('name');
+          $key_word = $request -> get('key_word');
 
         $batch_data = deal(MyScanService::sellBatchData($batch_id));///批次信息
         ///
-        $will_print_data = MyScanService::willPrintData($batch_id,$search_con,$batch_data);
+        ///
+        ///
+       if($fashion_size||$sex||$grade||$status||$name){
+           ////存在搜索条件
+           $search_con = compact('fashion_size','sex','grade','status','name','key_word');
+           $will_print_data = MyScanService::willPrintDataWithCon($batch_id,$search_con,$batch_data);
+       }else{
+           $will_print_data = MyScanService::willPrintData($batch_id,$search_con,$batch_data);
+       }
+
+
 
 
 
@@ -186,6 +219,7 @@ public function printList(Request $request){
 
     public function searchCon($request){
         $key_word = $request->get('key_word');
+
         return ['key_word' => $key_word];
 }
 
@@ -372,7 +406,10 @@ try{
     public function exportLiHuo(Request $request){
         $batch_id = $request->get('batch_id');///批次的id
         $fa_huo_data =  MyScanService::exportLiHuo($batch_id);
-        $headArr = ['产品名称','产品编码','简写编码','尺码','数量'];
+
+
+
+        $headArr = ['产品名称','产品编码','简写编码','尺码','数量','库位信息'];
         $sheet_title=['理货单'];
 
         ExcelHelper::exports($fa_huo_data,$headArr,'理货单',$sheet_title);

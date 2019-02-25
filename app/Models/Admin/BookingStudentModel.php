@@ -26,4 +26,16 @@ class BookingStudentModel extends BaseModel
         return $this->belongsTo('App\Models\Admin\SchoolGradeClassModel', 'class_id')->select('id', 'name');
     }
 
+    public function getSexAttribute($value)
+    {
+        switch ($value){
+            case 1:
+                return '男';
+            case 2:
+                return '女';
+            case 3:
+                return '未设置';
+        }
+    }
+
 }

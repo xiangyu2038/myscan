@@ -32,7 +32,7 @@
     <div class="z-tool sendGoods-tool" eui="clearfix">
         <a class="eui-btn" eui="primary sm"  onclick="RE('{{route('admin.myscan.index.print_vip',['batch_id'=>$batch_data['batch_id']])}}')">打印学生vip</a>
         <a class="eui-btn" eui="primary sm" onclick="RE('{{route('admin.myscan.index.scaning',['batch_id'=>$batch_data['batch_id']])}}')">货物扫描</a>
-
+        <a class="eui-btn" eui="primary,sm" onclick="RE('{{route('bind_box.bind_box_display',['batch_id'=>$batch_data['batch_id']])}}')">货物装箱</a>
         <a class="eui-btn" eui="primary sm" onclick="RE('{{route('admin.myscan.index.end_scan',['batch_id'=>$batch_data['batch_id']])}}')">配送出库</a>
     </div>
     <!--标签页-->
@@ -784,20 +784,6 @@
             })
         });
     </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <script>
         // 打印-------------------------------------------------------------------------------------
 

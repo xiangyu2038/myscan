@@ -33,9 +33,10 @@ class SizeOrderModel extends BaseModel {
      */
     protected function addBatch($order_id,$note,$fashion_code_s,$source,$fa_huo_time){
 
-        $size_order = SizeOrderModel::where('order_id',$order_id)->with('bookingOrder.bookingSuit.bookingFashion.sizeOrderConfigFashion.fashion')->with('bookingOrder.bookingSuit.sizeOrderConfig')->first();
+        $size_order = SizeOrderModel::where('order_id',$order_id)->with('bookingOrder.bookingSuit.bookingFashion.sizeOrderConfigFashion.fashion')->with('bookingOrder.bookingSuit.sizeOrderConfig')->with('bookingOrder.bookingSuit.bookingFashion.bookingFashionRefund')->first();
 
-         $size_order_all_fashion = $this->allOrder($size_order);///一个预售所有的订单
+
+        $size_order_all_fashion = $this->allOrder($size_order);///一个预售所有的订单
 
          $will_fa_fashion = $this->willFaFashion($size_order_all_fashion,$fashion_code_s);
         $order_sns = array_unique(array_column($will_fa_fashion,'order_sn'));
@@ -44,8 +45,6 @@ class SizeOrderModel extends BaseModel {
              return  SellBatchModel::add($will_fa_fashion,$fa_huo_time,$note,$order_sns,$source,$order_id);
          }
         throw new \Exception('插入批次失败');
-
-
     }
 
     /**
@@ -56,10 +55,22 @@ class SizeOrderModel extends BaseModel {
      */
     protected function allOrder($this_model){
 
+        if(!$this_model){
+             return [];
+         }
+
          $temp = [];
          foreach ($this_model->bookingOrder as $v){
-             $temp[] = BookingOrderModel::forThis($v);
+
+             //             if($v -> status == -1 ){
+//                continue;
+//             }
+
+//             if($v  ->is_pay == 2 && $v -> pay_status == '已支付' ){
+                 $temp[] = BookingOrderModel::forThis($v);
+          //  }
          }
+
          return $temp;
 
     }

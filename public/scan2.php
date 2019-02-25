@@ -74,14 +74,14 @@ class Scan{
                     // 数据库类型
                     'driver'            => 'mysql',
                     // 服务器地址
-                    'host'        => 'rm-bp14ky94j030f0gb09o.mysql.rds.aliyuncs.com',
+                    'host'        => '106.14.127.60',
                     'collation' => 'utf8_unicode_ci',
                     // 数据库名
-                    'database'        => 'size',
+                    'database'        => 'halfrintest',
                     // 用户名
-                    'username'        => 'halfrin',
+                    'username'        => 'halfrintest',
                     // 密码
-                    'password'        => 'Halfrin@888',
+                    'password'        => 'halfrintest',
                     // 端口
                     'hostport'        => '',
                     // 连接dsn
@@ -297,7 +297,7 @@ class Scan{
        }else if (self::getScanType()=='box'){
 
            ////扫描的是装箱这一个动作
-           if($str=='PS'&&strlen(self::getMessage())==15){
+           if($str=='SE'&&strlen(self::getMessage())==18){
                ///这是一个箱子的编码
                return ['type'=>'collection','belong'=>'box'];
            }else if($str=='XX'&&strlen(self::getMessage())==12){
@@ -469,7 +469,8 @@ class Scan{
                 return ['belong'=>'student','collection_id'=>$collection_id];
             }elseif(self::getScanType()=='box'){
                 ////为扫描箱子
-                $collection =  \Model\ScanCnModel::where('code',$pre_collection['code'])->where('order_batch_id',$pre_collection['order_batch_id'])->first();
+
+                $collection =  \App\Models\Admin\ScanCnModel::where('code',$pre_collection['code'])->where('order_batch_id',$pre_collection['order_batch_id'])->first();
 
                 if(!$collection){
                     throw new Exception('保存箱子信息失败,不存在的箱子,请先结束包裹扫描后再试');
@@ -483,6 +484,7 @@ class Scan{
     }
 
     public static function saveunits($collection_info,$pre_units){
+
         if(self::getScanType()=='package'){
             ////为扫描包裹
             $data = self::getUnitsSaveDataWithStudent($collection_info,$pre_units);///获取保存包裹下面的产品的信息格式
@@ -490,8 +492,9 @@ class Scan{
 
         }elseif(self::getScanType()=='box'){
             ////为扫描箱子
-            $data = self::getUnitsSaveDataWithBox($collection_info,$pre_units);
-            \App\Models\Admin\ScanStudentDetailsModel::Insert($data);
+            $data = self::getUnitsSaveDataWithBox($collection_info,$pre_units);;
+
+            \App\Models\Admin\ScanCnDetailsModel::Insert($data);
         }else{
             throw new Exception('不确定扫描类型,扫描异常');
         }

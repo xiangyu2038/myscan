@@ -142,11 +142,31 @@ Route::namespace('Admin\MyScan')->prefix('myscan')->group(function () {
     //给一个预售新建一个批次
     Route::post('/addSizeOrderBatch', 'IndexController@addSizeOrderBatch')->name('add_size_order_batch');
 
+     ///////装箱页面
+    Route::any('/bindBoxDisplay', 'BindBoxController@index')->name('bind_box.bind_box_display');
 
+    ////添加一个箱子
+    Route::any('/addBox', 'BindBoxController@addBox')->name('bind_box.add_box');
+    /////删除一个箱子
+    Route::any('/delBox', 'BindBoxController@delBox')->name('bind_box.del_box');
 
-    Route::get('api/{user}', function (App\User $user) {
-        dd(__LINE__);
-    });
+    ////获取箱子信息 准备打印
+    Route::any('/boxInfo', 'BindBoxController@boxInfo')->name('bind_box.box_info');
+
+    /////获取箱子内容 准备打印箱贴
+    Route::any('/boxContent', 'BindBoxController@boxContent')->name('bind_box.box_content');
+
+    /////获取箱子内容 准备打印箱贴
+    Route::any('/boxDetail', 'BindBoxController@boxDetail')->name('bind_box.box_detail');
+
+    /////获取箱子内容 准备打印箱贴
+    Route::any('/batchScanBox', 'BindBoxController@batchScanBox')->name('bind_box.batch_scan_box');
+
+    /////获取箱子内容 准备打印箱贴
+    Route::any('/clearBox', 'BindBoxController@clearBox')->name('bind_box.clear_box');
+
+    /////获取箱子内容 准备打印箱贴
+    Route::any('/moveBox', 'BindBoxController@moveBox')->name('bind_box.move_box');
 }
 );
 

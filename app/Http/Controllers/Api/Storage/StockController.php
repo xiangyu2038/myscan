@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Storage;
 
+use App\Helper\CommonHelper;
 use App\Helper\ExcelHelper;
 use App\Helper\ObjectHelper;
 use App\Http\Controllers\Api\Controller;
@@ -22,6 +23,7 @@ use App\Models\Admin\StockScanBoxDetailModel;
 use App\Models\Admin\StockScanBoxModel;
 use App\Models\Admin\StockScanStockDetailModel;
 use App\Models\Admin\StockScanStockModel;
+use App\Service\Admin\StockService;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use XiangYu2038\Wish\XY;
@@ -1100,8 +1102,90 @@ $temp = [];
 
 
 
+public function stockImport(Request $request){
+
+      if($request->isMethod('post')){
+       $res = CommonHelper::upload($request,'file');//上传文件  获取上传地址
+       if($res['code']==0){
+           $file_path = $res['data']['url'];
+           $ext = $res['data']['ext'];
+           $data =  ExcelHelper::import($file_path,$ext);///导入的表格数据
+           foreach ($data as $key => $v){
+               $this -> oneSheet($v,$key);
+           }
+           return response()->json(['state'=>0,'msg'=>'ok']);
+
+       }else{
+           dd($res['msg']);
+       }
+   }
+
+    return view('admin.tool.import_stock');
+}
+
+public function oneSheet($data,$title){
+    $stock_service = ObjectHelper::getInstance(StockService::class);
+    $deal_data = $stock_service -> dealStockImport($data);
+    ////开始生成一个盘点单
+    $stock_in =new StockInModel();
+     parse_str(urldecode($_POST['datas']),$post);
+
+    $title = $title.current_time().'导入入库数据';
+    $operate = $post['operator'];
+    $created_at = current_time();
+    $note = $post['note'];
+    $stock_name = $post['type'];
+
+    $stock_in_model = $stock_in -> add($title,$operate,$created_at,$stock_name);
+
+   $return =  $stock_service -> stockIns($stock_in_model,$deal_data);
+  if($return['code'] == 1){
+      dd($return['msg']);
+  }
+return;
+}
+public function oneSheetOut($data,$title){
+    $stock_service = ObjectHelper::getInstance(StockService::class);
+    $deal_data = $stock_service -> dealStockImport($data);
+    ////开始生成一个盘点单
+    $stock_out =new StockOutModel();
+     parse_str(urldecode($_POST['datas']),$post);
+
+    $title = $title.current_time().'导入数据';
+    $operate = $post['operator'];
+    $created_at = current_time();
+    $note = $post['note'];
+    $stock_name = $post['type'];
+
+    $stock_out_model = $stock_out -> add($title,$operate,$stock_name);
+
+   $return =  $stock_service -> stockOuts($deal_data,$stock_out_model );
+  if($return['code'] == 1){
+      dd($return['msg']);
+  }
+return;
+}
 
 
+    public function stockImportOut(Request $request){
 
+        if($request->isMethod('post')){
+            $res = CommonHelper::upload($request,'file');//上传文件  获取上传地址
+            if($res['code']==0){
+                $file_path = $res['data']['url'];
+                $ext = $res['data']['ext'];
+                $data =  ExcelHelper::import($file_path,$ext);///导入的表格数据
+                foreach ($data as $key => $v){
+                    $this -> oneSheetOut($v,$key);
+                }
+                return response()->json(['state'=>0,'msg'=>'ok']);
+
+            }else{
+                dd($res['msg']);
+            }
+        }
+
+        return view('admin.tool.import_stock');
+    }
 
 }

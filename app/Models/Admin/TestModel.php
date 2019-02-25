@@ -8,7 +8,7 @@ class TestModel extends BaseModel
 {
     //
     //指定表名
-    protected $table = 'ts_a_test';
+    protected $table = 'ts_pandian';
 
     protected $guarded = [];
 

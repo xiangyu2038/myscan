@@ -68,6 +68,7 @@ var Sweep={
                 if(difference>Sweep.delay){
                     Sweep.code='';
                 }
+                if(e.key=='-') e.key='_';
                 Sweep.code+=e.key;
                 // 重置Sweep.time为当前时间
                 Sweep.time=new Date().getTime();
